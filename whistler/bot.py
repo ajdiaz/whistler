@@ -134,6 +134,18 @@ class WhistlerBot(object):
         return self.client
 
 
+    def register_command(self, cmdname, cmdfun):
+        """ Register on the fly a new command. This function intend to
+        provide a way to add commands on-the-fly, when :class:`WhistlerBot`
+        is alreay instanced.
+
+        :param `cmdname`: a name to this command.
+        :param `cmdfun`: a callback which can accept three arguments, which
+            will be usd when command called. """
+
+        setattr(self, "cmd_%s" % cmdname, cmdfun)
+
+
     def start(self):
         """ Start to serve the bot, until finished signal is received, using
         for that the :func:`stop`. """
