@@ -133,7 +133,7 @@ class WhistlerBot(object):
 
         for room in self.rooms.keys():
             # Begin the join iteration process
-            self._joining = self.join(*room.split('@'))
+            self._joining = self.join_room(*room.split('@'))
             self._joining.next()
 
         self.idle = WhistlerIdleJob(self.client, 60)
@@ -211,7 +211,7 @@ class WhistlerBot(object):
                    serv = msg.getFrom().getDomain()
 
                    # Begin the join iteration process
-                   self._joining = self.join(room, serv)
+                   self._joining = self.join_room(room, serv)
                    self._joining.next()
                    return
 
@@ -253,7 +253,18 @@ class WhistlerBot(object):
             pass
 
 
-    def join(self, room, server, resource=None):
+    def join(self, rooms):
+        """ Join into rooms specified in argument, as a :class:`list` of
+        strings which contain valid room names (*name*@*server*). """
+
+        for room in rooms:
+            # Begin the join iteration process
+            room, serv = room.split('@')
+            self._joining = self.join_room(room, serv)
+            self._joining.next()
+
+
+    def join_room(self, room, server, resource=None):
         """ Perform a bot join into a MUC room, aditional resource name can
         be provided to identify the bot in the MUC.
 
