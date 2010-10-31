@@ -38,10 +38,16 @@ def main():
        default=5222, help="Specify a different destination port.")
 
     parser.add_option("-P", "--password", action="store", dest="password",
-            type="str", default="", help="Specify user password.")
+        type="str", default="", help="Specify user password.")
 
     parser.add_option("-D", "--debug", action="store_true", dest="debug",
-            default=False, help="run in debug mode.")
+        default=False, help="Run in debug mode.")
+
+    parser.add_option("-R", "--room", action="append", dest="rooms",
+        default=[], help="Join into this room (option can be repeated.")
+
+    parser.add_option("-U", "--user", action="append", dest="users",
+        default=[], help="Set the user as master user (option can be repeated.")
 
     # Parse options
     options, args = parser.parse_args()
@@ -49,21 +55,21 @@ def main():
     log = WhistlerLog()
 
     try:
-        if len(args) < 2:
-            raise IndexError("usage: %s [options] <JID> [room]+"
+        if len(args) < 1:
+            raise IndexError("usage: %s [options] <JID>"
                     % sys.argv[0])
 
         if options.server:
             options.server = ( options.server, options.port )
 
         options.jid   = args[0]
-        options.rooms = args[1:]
 
         log.info("starting bot...")
 
         bot = MainWhistlerBot( jid = options.jid, password = options.password,
                 rooms = options.rooms, server = options.server, log = log,
-                resource = options.resource )
+                resource = options.resource, users = options.users)
+        bot.debug = options.debug
 
         try:
             bot.start()

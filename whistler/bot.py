@@ -55,7 +55,7 @@ class WhistlerBot(object):
 
 
     def __init__(self, jid, password, server=None, rooms=None,
-            resource=None, log=None):
+            resource=None, log=None, users=None):
         """ Create a new :class:`WhistlerBot` object, the :func:`__init__`
         receive the following parameters:
 
@@ -69,12 +69,16 @@ class WhistlerBot(object):
             not provided.
         :param `log`: a :class:`WhistlerLog` to log bot messages to, or
             *stdout* if none is provided.
+        :param `users`: a :class:`list` of valid JID as strings which
+            identify master users.
         """
 
         self.jid = xmpp.JID(jid)
         self.password = password
         self.server = server or ( self.jid.getDomain(), 5222 )
         self.log = log or WhistlerLog()
+        self.debug = False
+        self.users = users or []
 
         self.idle = None
         self.client = None
@@ -101,7 +105,9 @@ class WhistlerBot(object):
         if self.client:
             return self.client
 
-        self.client = xmpp.client.Client(self.jid.getDomain(), debug=[])
+        debug = debug=['always', 'nodebuilder'] if self.debug else []
+
+        self.client = xmpp.client.Client(self.jid.getDomain(), debug=debug)
 
         if not self.client.connect(server=self.server, secure=True):
             raise WhistlerConnectionError(
@@ -168,6 +174,13 @@ class WhistlerBot(object):
         self.client = None
 
 
+    def is_validuser(self, jid):
+        if jid in self.users:
+            return True
+        else:
+            return False
+
+
     def handle_presence(self, client, message):
         """ Handle the presence in XMPP server, this function is designed to
         work internally to bot, and handle the presence subscription
@@ -176,7 +189,9 @@ class WhistlerBot(object):
         presence_type = message.getType()
 
         if presence_type == "subscribe":
-            with message.getFrom() as who:
+            who = message.getFrom()
+
+            if self.is_validuser(who):
                 self.client.send(xmpp.protocol.Presence(to=who, typ="subscribed"))
                 self.client.send(xmpp.protocol.Presence(to=who, typ="subscribe"))
 
