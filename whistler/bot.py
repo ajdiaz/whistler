@@ -131,10 +131,7 @@ class WhistlerBot(object):
 
         self.on_connect()
 
-        for room in self.rooms.keys():
-            # Begin the join iteration process
-            self._joining = self.join_room(*room.split('@'))
-            self._joining.next()
+        self.join(self.rooms.keys())
 
         self.idle = WhistlerIdleJob(self.client, 60)
         return self.client
@@ -259,8 +256,14 @@ class WhistlerBot(object):
 
         for room in rooms:
             # Begin the join iteration process
-            room, serv = room.split('@')
+            try:
+                room, serv = room.split('@')
+            except ValueError:
+                self.log.warning("invalid room ot join: %s" % room)
+                continue
+
             self._joining = self.join_room(room, serv)
+            self.log.info("joined to %s@%s" % ( room, serv ))
             self._joining.next()
 
 
@@ -279,6 +282,7 @@ class WhistlerBot(object):
             room_presence = xmpp.protocol.JID(node = room, domain = server,
                     resource = resource)
             self.client.send(xmpp.protocol.Presence(room_presence))
+            self.rooms[u"%s@%s" % ( room, server ) ] = resource
 
             no_error = (yield)
 
@@ -289,10 +293,38 @@ class WhistlerBot(object):
             self.log.warnings("invalid resource name from room %s, " % room +
                               "trying new one (%s)" % resource)
 
-        self.log.info("joined to %s with name %s" % ( room, resource ))
-
         self.client.RegisterHandler("presence", self.handle_presence)
-        self.rooms["%s@%s" % ( room, server) ] = resource
+
+
+    def leave(self, rooms):
+        """ Leave the rooms specified in argument, as a :class:`list` of
+        strings which contain valid room names (*name*@*server*). """
+
+        for room in rooms:
+            try:
+                room, server = room.split('@')
+            except ValueError:
+                self.log.warning("invalid room to leave: %s" % room)
+                continue
+
+            self.log.info("leaving room: %s@%s" % (room, server))
+            self.leave_room(room, server)
+
+
+    def leave_room(self, room, server, resource=None):
+        """ Perform an action to leave a room where currently the bot is in.
+
+        :param `room`: the room name to leave.
+        :param `server`: the server where room is.
+        :param `resource`: the resource which leaves. """
+
+        room_id = "%s@%s" % ( room, server)
+        room_presence = xmpp.protocol.JID(node = room, domain=server,
+                    resource = resource or self.rooms[room_id])
+
+        self.client.send(xmpp.protocol.Presence(to=room_presence,
+                                                typ="unavailable"))
+        self.rooms.pop(room_id)
 
 
     def send(self, message, command, arguments=[]):

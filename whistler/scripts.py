@@ -30,6 +30,11 @@ class MainWhistlerBot(WhistlerBot):
         if self.is_validuser(user):
             self.join(args)
 
+    def cmd_leave(self, msg, args):
+        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+
+        if self.is_validuser(user):
+            self.leave(args)
 
 def main():
     """ Main console script function, which run a operational bot on an
