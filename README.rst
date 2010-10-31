@@ -6,9 +6,7 @@ Whistler Bot is an XMPP bot written in python using pyxmpp, which is
 a requirement. The bot is designed to handle some commands, and it's easy to
 extend.
 
-Simple usage:
-
-.. code-block:: python
+Simple usage::
 
     from whistler.bot import WhistlerBot
 
@@ -25,9 +23,7 @@ Extending bot
 You can extend the bot functionalities, just see for example the code of the
 whistler console script. In short you can add commands creating a new class
 from WhistlerBot, and define new functions in the form *cmd_* plus the
-command name, for example, to handle the command *ping*:
-
-.. code-block:: python
+command name, for example, to handle the command *ping*::
 
     from whistler.bot import WhistlerBot
 
