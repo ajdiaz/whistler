@@ -5,6 +5,29 @@
 # This code is heavly based on quinoa, which is:
 #   (c) 2010 Kit La Touche
 
+"""
+The bot module
+--------------
+
+The bot module provide a set of classes to instance a basic bot, which
+handle commands received in MUC stream and also user messages to, and
+parse them trying to execute a valid command.
+
+The :class:`WhistlerBot` is the main class used to start the bot, and is
+designed to be extended when require. Let's an example:
+
+.. code-block:: python
+
+    from whistler.bot import WhistlerBot
+
+    class MyBot(WhistlerBot):
+        def cmd_ping(self, msg, args):
+            return "pong"
+
+The previous example create a ping/pong bot in a three lines. More complex
+action can be used too.
+"""
+
 import os
 import sys
 import time

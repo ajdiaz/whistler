@@ -2,6 +2,14 @@
 # -*- encoding: utf-8 -*-
 # vim:fenc=utf-8:
 
+"""
+The log module
+--------------
+
+The log module provide a transparent way to handle log messages from
+whistler, no any other secret here.
+"""
+
 import logging
 
 LOG_INFO = logging.INFO

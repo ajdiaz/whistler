@@ -2,6 +2,16 @@
 # -*- encoding: utf-8 -*-
 # vim:fenc=utf-8:
 
+
+"""
+The scripts module
+------------------
+
+The scripts module provide and endpoint for console scripts, like whistler
+command, provided in basic whistler package.
+
+"""
+
 import sys
 from optparse import OptionParser
 from whistler.bot import WhistlerBot
