@@ -103,6 +103,16 @@ class WhistlerBot(object):
         function will be executed. """
 
 
+    def set_subject(self, room, subject):
+        """ Set a new subject on specified room. """
+
+        if room in self.rooms.keys():
+            dest = xmpp.JID(room)
+            mesg = "Whistler set subject to: %s" % subject
+            self.client.send( xmpp.protocol.Message(dest, mesg,
+                              "groupchat", subject=subject) )
+
+
     def connect(self):
         """ Perform a connection to the server, this function is designed to
         work internally, but calls to :func:`on_connect` when connection is
