@@ -7,7 +7,7 @@ NOSY_VERSION="1.0"
 setup(
     name = "whistler",
     version = NOSY_VERSION,
-    description = "A MUC bot for XMPP which handled commands.",
+    description = "An extensible MUC bot for XMPP.",
     long_description=open('README.rst').read() + """
     For more information, point to whistler web.""",
     author='Andres J. Diaz',
@@ -21,20 +21,11 @@ setup(
         ]
     },
     classifiers=[
-          'Development Status :: 5 - Production/Stable',
-          'Environment :: Console',
+          'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
-          'Intended Audience :: System Administrators',
           'License :: OSI Approved :: GNU General Public License (GPL)',
-          'Operating System :: Unix',
-          'Operating System :: POSIX',
+          'Operating System :: OS Independent',
           'Programming Language :: Python',
-          'Topic :: Software Development',
-          'Topic :: Software Development :: Build Tools',
-          'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Libraries :: Python Modules',
-          'Topic :: System :: Clustering',
-          'Topic :: System :: Software Distribution',
-          'Topic :: System :: Systems Administration',
+          'Topic :: Communications :: Chat',
     ],
 )
