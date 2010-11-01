@@ -25,7 +25,7 @@ setup(
           'Environment :: Console',
           'Intended Audience :: Developers',
           'Intended Audience :: System Administrators',
-          'License :: OSI Approved :: MIT License',
+          'License :: OSI Approved :: GNU General Public License (GPL)',
           'Operating System :: Unix',
           'Operating System :: POSIX',
           'Programming Language :: Python',

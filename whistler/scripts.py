@@ -24,6 +24,12 @@ class MainWhistlerBot(WhistlerBot):
     def cmd_ping(self, msg, args):
         return "pong"
 
+
+    def cmd_whistler(self, msg, args):
+        return "/me is an XMPP bot with MUC (multi-user-conference) " + \
+               "support easy to extend, written in Python using xmppy module."
+
+
     @restricted
     def cmd_join(self, msg, args):
         self.join(args)
