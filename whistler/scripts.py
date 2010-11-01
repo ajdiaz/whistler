@@ -21,8 +21,10 @@ from whistler.log import WhistlerLog
 class MainWhistlerBot(WhistlerBot):
     """ Extend basic whistler bot, adding some functionalities. """
 
+
     def cmd_ping(self, msg, args):
         return "pong"
+
 
     def cmd_join(self, msg, args):
         user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
@@ -30,11 +32,20 @@ class MainWhistlerBot(WhistlerBot):
         if self.is_validuser(user):
             self.join(args)
 
+
     def cmd_leave(self, msg, args):
         user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
 
         if self.is_validuser(user):
             self.leave(args)
+
+
+    def cmd_quit(self, msg, args):
+        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+
+        if self.is_validuser(user):
+            self.stop()
+
 
 def main():
     """ Main console script function, which run a operational bot on an

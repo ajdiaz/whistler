@@ -97,6 +97,12 @@ class WhistlerBot(object):
         function will be executed. """
 
 
+    def on_disconnect(self):
+        """ This function can be override to handle the disconnection event.
+        Before bot is sucessfully disconnect, the actions defined in this
+        function will be executed. """
+
+
     def connect(self):
         """ Perform a connection to the server, this function is designed to
         work internally, but calls to :func:`on_connect` when connection is
@@ -126,6 +132,8 @@ class WhistlerBot(object):
 
         self.client.RegisterHandler("message",  self.handle_message)
         self.client.RegisterHandler("presence", self.handle_presence)
+        self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
+        self.client.RegisterDisconnectHandler(self.on_disconnect)
 
         self.client.sendInitPresence()
 
@@ -158,7 +166,7 @@ class WhistlerBot(object):
 
         self.idle.start()
 
-        while True:
+        while self.client.isConnected():
             self.client.Process(10)
 
 
@@ -166,10 +174,10 @@ class WhistlerBot(object):
         """ Stop the bot to serve, this function also destroy current
         connection if exists. """
 
+        self.disconnect()
+
         if self.idle:
             self.idle.stop()
-        self.client = None
-
 
     def is_validuser(self, jid):
         if jid in self.users:
@@ -237,7 +245,7 @@ class WhistlerBot(object):
             self.send(message, command, arguments)
 
 
-    def handler_error(self, client, message):
+    def handle_error(self, client, message):
         """ Handle error when register presence on groupchat, this function
         provide a way to rejoin on some kind of errors. """
 
@@ -275,7 +283,7 @@ class WhistlerBot(object):
         :param `server`: The conference server where room lives.
         :param `resource`: A resource name for the bot in the room.  """
 
-        self.client.RegisterHandler("presence", self.handler_error)
+        self.client.RegisterHandler("presence", self.handle_error)
         resource = resource or self.resource or "whistler"
 
         while True:
@@ -309,6 +317,16 @@ class WhistlerBot(object):
 
             self.log.info("leaving room: %s@%s" % (room, server))
             self.leave_room(room, server)
+
+
+    def disconnect(self):
+        """ Leave the server, setting the bot presence to unavailable
+        and close server connections. """
+
+        self.client.UnregisterHandler("message", self.handle_message)
+        self.client.UnregisterHandler("presence", self.handle_presence)
+        self.log.info("Shutting down the bot...")
+        self.client.disconnected()
 
 
     def leave_room(self, room, server, resource=None):
