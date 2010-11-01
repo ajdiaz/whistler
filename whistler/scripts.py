@@ -14,37 +14,27 @@ command, provided in basic whistler package.
 
 import sys
 from optparse import OptionParser
-from whistler.bot import WhistlerBot
+from whistler.bot import WhistlerBot, restricted
 from whistler.log import WhistlerLog
 
 
 class MainWhistlerBot(WhistlerBot):
     """ Extend basic whistler bot, adding some functionalities. """
 
-
     def cmd_ping(self, msg, args):
         return "pong"
 
-
+    @restricted
     def cmd_join(self, msg, args):
-        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+        self.join(args)
 
-        if self.is_validuser(user):
-            self.join(args)
-
-
+    @restricted
     def cmd_leave(self, msg, args):
-        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+        self.leave(args)
 
-        if self.is_validuser(user):
-            self.leave(args)
-
-
+    @restricted
     def cmd_quit(self, msg, args):
-        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
-
-        if self.is_validuser(user):
-            self.stop()
+        self.stop()
 
 
 def main():

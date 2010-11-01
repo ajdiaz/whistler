@@ -44,6 +44,28 @@ xmpp.NS_CONFERENCE = "jabber:x:conference"
 
 COMMAND_CHAR = "!"
 
+def restricted(fun):
+    """ The restricted decorator is designed to work in commands, to check
+    if user is in authorized users to perform an action. Example of usage:
+
+    .. code-block:: python
+
+      @restricted
+      def cmd_ping(self, msg, args):
+          return "pong"
+
+    In this example ping command is only allowed to authenticated users. """
+
+    def new(self, msg, args):
+        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+        if self.is_validuser(user):
+            return fun(self, msg, args)
+        else:
+            self.log.warning("ignoring command %s, invalid user %s." % \
+                            ( fun.__name__[4:], user ))
+    return new
+
+
 class WhistlerConnectionError(Exception):
     """ A exception which will be raised on bot connection error. """
 
@@ -244,14 +266,14 @@ class WhistlerBot(object):
             # None to handle
             return
 
-        command   = body.split()[0][1:]
+        command_n = body.split()[0][1:]
         arguments = body.split()[1:]
 
-        command = getattr(self, "cmd_%s" % command, None)
+        command = getattr(self, "cmd_%s" % command_n, None)
 
         if command:
             self.log.info("received command %s with arguments %s" % \
-                         ( command.__name__[4:], str(arguments) ))
+                         ( command_n, str(arguments) ))
             self.send(message, command, arguments)
 
 
