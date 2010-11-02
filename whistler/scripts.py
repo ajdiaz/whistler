@@ -42,6 +42,18 @@ class MainWhistlerBot(WhistlerBot):
     def cmd_quit(self, msg, args):
         self.stop()
 
+    @restricted
+    def cmd_user(self, msg, args):
+        if not args:
+            return "\n".join(self.users)
+
+        if len(args) >= 2:
+            if args[0].lower() == "add":
+                for user in args[1:]:
+                    self.register_user(user)
+            elif args[0].lower() == "del":
+                for user in args[1:]:
+                    self.unregister_user(user)
 
 def main():
     """ Main console script function, which run a operational bot on an

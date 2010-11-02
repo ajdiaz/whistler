@@ -211,11 +211,30 @@ class WhistlerBot(object):
         if self.idle:
             self.idle.stop()
 
+
     def is_validuser(self, jid):
+        """ Return if the specified user is registered as valid user in the
+        bot, according to :func:`register_user` and :func:`unregister_user`
+        functions. """
+
         if jid in self.users:
             return True
         else:
             return False
+
+
+    def register_user(self, jid):
+        """ Register an user as valid user for the bot. """
+
+        if jid not in self.users:
+            self.users.append(jid)
+
+
+    def unregister_user(self, jid):
+        """ Unregister an user as valid user for the bot. """
+
+        if jid in self.users:
+            self.users.remove(jid)
 
 
     def handle_presence(self, client, message):
