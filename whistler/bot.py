@@ -110,7 +110,7 @@ class WhistlerBot(object):
             self.rooms[room] = resource
 
         self.resource = resource or self.__class__.__name__.lower() + \
-                                    random.getrandbits(32)
+                                    str(random.getrandbits(32))
 
 
     def on_connect(self):
