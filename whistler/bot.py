@@ -281,12 +281,18 @@ class WhistlerBot(object):
 
         body = message.getBody()
 
-        if not body or body[0] != COMMAND_CHAR:
+        if not body or (body[0] != COMMAND_CHAR \
+                and not body.startswith(self.resource + ", ") \
+                and not body.startswith(self.resource + ": ")):
             # None to handle
             return
 
-        command_n = body.split()[0][1:]
-        arguments = body.split()[1:]
+        if body[0] == COMMAND_CHAR:
+            command_n = body.split()[0][1:]
+            arguments = body.split()[1:]
+        else:
+            command_n = body.split()[1]
+            arguments = body.split()[2:]
 
         command = getattr(self, "cmd_%s" % command_n, None)
 
