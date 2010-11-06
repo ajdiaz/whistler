@@ -39,7 +39,7 @@ warnings.filterwarnings("ignore",category=DeprecationWarning)
 import xmpp
 
 from whistler.log import WhistlerLog
-from whistler.job import WhistlerIdleJob, WhistlerWorkJob
+from whistler.job import WhistlerIdleJob
 
 xmpp.NS_CONFERENCE = "jabber:x:conference"
 

@@ -78,40 +78,4 @@ class WhistlerIdleJob(WhistlerJob):
 
         self.client.send(xmpp.protocol.Presence())
 
-class WhistlerWorkJob(threading.Thread):
-    """ Perform the working job, which process messages. """
-
-    def __init__(self, client, **kwargs):
-        """
-        Create a new :class:PingThread for the node passed as argument,
-        which send a broadcast to the network to report his location.
-
-        :param node: a :class:NosyNode node to send the ping.
-        """
-
-        super(WhistlerWorkJob, self).__init__(**kwargs)
-        self.client = client
-        self.name = "WorkJob"
-        self.cond = threading.Condition()
-        self.halt = False
-
-
-    def run(self):
-        """ Perform a XMPP Presence update command. """
-
-        while not self.halt:
-            self.cond.acquire()
-            if not self.halt:
-                self.client.Process()
-            self.cond.release()
-
-
-    def stop(self):
-        """ Stop the job cleanly """
-
-        self.cond.acquire()
-        self.halt = True
-        self.cond.notifyAll()
-        self.cond.release()
-
 
