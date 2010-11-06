@@ -24,6 +24,7 @@ designed to be extended when require. Let's an example:
         def cmd_ping(self, msg, args):
             return "pong"
 
+
 The previous example create a ping/pong bot in a three lines. More complex
 action can be used too.
 """
@@ -91,7 +92,7 @@ class WhistlerBot(object):
             not provided.
         :param `log`: a :class:`WhistlerLog` to log bot messages to, or
             *stdout* if none is provided.
-        :param `users`: a :class:`list` of valid JID as strings which
+        :param `users`: a :class:`set` of valid JID as strings which
             identify master users.
         """
 
@@ -100,7 +101,7 @@ class WhistlerBot(object):
         self.server = server or ( self.jid.getDomain(), 5222 )
         self.log = log or WhistlerLog()
         self.debug = False
-        self.users = users or []
+        self._initial_users = users
 
         self.idle = None
         self.client = None
@@ -113,6 +114,18 @@ class WhistlerBot(object):
                                     str(random.getrandbits(32))
 
 
+    @property
+    def users(self):
+        """ A property which return an iterator over users in bot roster, that is
+        administrative users or valid users to admin the bot. """
+
+        roster = self.client.getRoster()
+
+        for jid in roster.getItems():
+            if jid not in self.rooms and jid != self.jid:
+                yield jid
+
+
     def on_connect(self):
         """ This function can be override to handle the connection event.
         When bot is sucessfully connect, the actions defined in this
@@ -123,6 +136,17 @@ class WhistlerBot(object):
         """ This function can be override to handle the disconnection event.
         Before bot is sucessfully disconnect, the actions defined in this
         function will be executed. """
+
+
+    def send_to(self, who, data):
+        """ Send a chat message to any user. This function is designed to
+        be called from user custom handle functions, like :func:`on_connect`
+        or :func:`on_register_user`.
+
+        :param `who`: The JID as string representation of the recipient.
+        :param `data`: An string which contain the message to be set. """
+        dest = xmpp.JID(who)
+        self.client.send( xmpp.protocol.Message(dest, data, "chat") )
 
 
     def set_subject(self, room, subject):
@@ -154,6 +178,7 @@ class WhistlerBot(object):
         else:
             self.log.info("connected to %s, port %d" % self.server)
 
+
         if not self.client.auth(self.jid.getNode(), self.password, self.resource):
             raise WhistlerConnectionError(
                 "unable to authorize user %s" % self.jid.getNode()
@@ -174,7 +199,21 @@ class WhistlerBot(object):
         self.join(self.rooms.keys())
 
         self.idle = WhistlerIdleJob(self.client, 60)
+
+        for user in self._initial_users:
+            self.register_user(user)
+
         return self.client
+
+
+    def on_register_user(self, who):
+        """ This function can be override to handle the registration event.
+        When bot is successfully subscribed to any admin user, the actions
+        defined in this function will be executed.
+
+        :param `who`: the JID as string representation of the user which
+            is recenlty added.
+        """
 
 
     def register_command(self, cmdname, cmdfun):
@@ -217,7 +256,12 @@ class WhistlerBot(object):
         bot, according to :func:`register_user` and :func:`unregister_user`
         functions. """
 
-        if jid in self.users:
+        if jid in self.rooms:
+            return False
+
+        roster = self.client.getRoster()
+
+        if jid in roster.getItems():
             return True
         else:
             return False
@@ -226,15 +270,20 @@ class WhistlerBot(object):
     def register_user(self, jid):
         """ Register an user as valid user for the bot. """
 
-        if jid not in self.users:
-            self.users.append(jid)
+        roster = self.client.getRoster()
+        roster.Subscribe(jid)
+        roster.Authorize(jid)
+        self.client.send(xmpp.protocol.Presence(to=jid, typ="subscribe"))
 
 
     def unregister_user(self, jid):
         """ Unregister an user as valid user for the bot. """
 
-        if jid in self.users:
-            self.users.remove(jid)
+        if jid not in self.rooms and jid != self.jid:
+            roster = self.client.getRoster()
+            roster.Unsubscribe(jid)
+            roster.Unauthorize(jid)
+            roster.delItem(jid)
 
 
     def handle_presence(self, client, message):
@@ -243,13 +292,19 @@ class WhistlerBot(object):
         XMPP message. """
 
         presence_type = message.getType()
+        who = message.getFrom()
 
         if presence_type == "subscribe":
-            who = message.getFrom()
 
-            if self.is_validuser(who):
-                self.client.send(xmpp.protocol.Presence(to=who, typ="subscribed"))
-                self.client.send(xmpp.protocol.Presence(to=who, typ="subscribe"))
+            if who not in self._initial_users:
+                return
+
+            self.client.send(xmpp.protocol.Presence(to=who, typ="subscribed"))
+            self.client.send(xmpp.protocol.Presence(to=who, typ="subscribe"))
+
+        if presence_type == "subscribed":
+            self._initial_users.discard(who)
+            self.on_register_user(who)
 
 
     def handle_message(self, client, message):
@@ -270,6 +325,7 @@ class WhistlerBot(object):
                    self._joining = self.join_room(room, serv)
                    self._joining.next()
                    return
+
 
         if message.getType() == "groupchat":
             _room = message.getFrom()

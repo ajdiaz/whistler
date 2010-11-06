@@ -21,6 +21,10 @@ from whistler.log import WhistlerLog
 class MainWhistlerBot(WhistlerBot):
     """ Extend basic whistler bot, adding some functionalities. """
 
+    def on_register_user(self, who):
+        self.send_to(who,"Hi %s, now you are a whistler administrator." % who)
+
+
     def cmd_ping(self, msg, args):
         return "pong"
 
@@ -34,13 +38,16 @@ class MainWhistlerBot(WhistlerBot):
     def cmd_join(self, msg, args):
         self.join(args)
 
+
     @restricted
     def cmd_leave(self, msg, args):
         self.leave(args)
 
+
     @restricted
     def cmd_quit(self, msg, args):
         self.stop()
+
 
     @restricted
     def cmd_user(self, msg, args):
@@ -54,6 +61,7 @@ class MainWhistlerBot(WhistlerBot):
             elif args[0].lower() == "del":
                 for user in args[1:]:
                     self.unregister_user(user)
+
 
 def main():
     """ Main console script function, which run a operational bot on an
@@ -100,7 +108,7 @@ def main():
 
         bot = MainWhistlerBot( jid = options.jid, password = options.password,
                 rooms = options.rooms, server = options.server, log = log,
-                resource = options.resource, users = options.users)
+                resource = options.resource, users = set(options.users))
         bot.debug = options.debug
 
         try:
