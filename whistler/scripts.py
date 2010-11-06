@@ -16,9 +16,10 @@ import sys
 from optparse import OptionParser
 from whistler.bot import WhistlerBot, restricted
 from whistler.log import WhistlerLog
+from whistler.mixins import PatchQueueMixin
 
 
-class MainWhistlerBot(WhistlerBot):
+class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
     """ Extend basic whistler bot, adding some functionalities. """
 
     def on_register_user(self, who):
