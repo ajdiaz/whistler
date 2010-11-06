@@ -11,7 +11,7 @@ Useful mix-in classes to add prebuilt behavior to custom bots.
 
 import inspect
 import threading
-from whistler.bot import restricted
+
 
 class HelpCommandMixin(object):
     """
