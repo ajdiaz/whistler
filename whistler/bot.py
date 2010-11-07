@@ -467,12 +467,11 @@ class WhistlerBot(object):
         :param `command`: The command handled.
         :param `arguments`: a :class:`list` of arguments to the command. """
 
-        dest = message.getFrom()
+        reply = command(message, arguments)
 
+        dest = message.getFrom()
         if message.getType() == "groupchat":
             dest.setResource("")
-
-        reply = command(message, arguments)
 
         self.client.send(xmpp.protocol.Message(dest, reply, message.getType()))
 
