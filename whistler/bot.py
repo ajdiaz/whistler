@@ -35,11 +35,6 @@ import time
 import random
 import warnings
 
-from sleekxmpp.clientxmpp import ClientXMPP
-
-from whistler.log import WhistlerLog
-from whistler.job import WhistlerIdleJob
-
 try:
     from functools import update_wrapper
 except ImportError:
@@ -48,6 +43,12 @@ except ImportError:
         wrapper.__name__ = wrapped.__name__
         wrapper.__doc__  = getattr(wrapped, "__doc__", None)
         return wrapper
+
+
+from sleekxmpp.clientxmpp import ClientXMPP
+
+from whistler.log import WhistlerLog
+from whistler.job import WhistlerIdleJob
 
 
 NS_CONFERENCE = "jabber:x:conference"
@@ -121,7 +122,6 @@ class WhistlerBot(object):
             identify master users.
 
         """
-
         self.jid = jid
         self.password = password
         self.server = server
@@ -232,15 +232,11 @@ class WhistlerBot(object):
             self.log.info("connected to %s, port %d" % self.server)
             self.client.start_tls()
             self.log.info("did STARTTLS successfully")
+            self.run_handler(EVENT_CONNECT)
         else:
             raise WhistlerConnectionError(
                 "unable to connect to %s using port %d" % self.server
             )
-
-        #self.client.RegisterHandler("message",  self.handle_message)
-        #self.client.RegisterHandler("presence", self.handle_presence)
-        #self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
-        #self.client.RegisterDisconnectHandler(self.on_disconnect)
 
         return self.client
 
@@ -249,7 +245,6 @@ class WhistlerBot(object):
         self.client.get_roster()
         self.client.send_presence()
         self.on_connect()
->>>>>>> WIP on migrating to SleekXMPP
 
         # XXX Is the idle job still needed??
         self.idle = WhistlerIdleJob(self.client, 60)
