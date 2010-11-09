@@ -35,8 +35,7 @@ import time
 import random
 import warnings
 
-warnings.filterwarnings("ignore",category=DeprecationWarning)
-import xmpp
+from sleekxmpp.clientxmpp import ClientXMPP
 
 from whistler.log import WhistlerLog
 from whistler.job import WhistlerIdleJob
@@ -51,7 +50,7 @@ except ImportError:
         return wrapper
 
 
-xmpp.NS_CONFERENCE = "jabber:x:conference"
+NS_CONFERENCE = "jabber:x:conference"
 
 COMMAND_CHAR = "!"
 
@@ -122,9 +121,10 @@ class WhistlerBot(object):
             identify master users.
 
         """
-        self.jid = xmpp.JID(jid)
+
+        self.jid = jid
         self.password = password
-        self.server = server or ( self.jid.getDomain(), 5222 )
+        self.server = server
         self.log = log or WhistlerLog()
         self.debug = False
         self._initial_users = users
@@ -142,6 +142,7 @@ class WhistlerBot(object):
         self.resource = resource or self.__class__.__name__.lower() + \
                                     str(random.getrandbits(32))
 
+        self.jid += "/" + self.resource
 
     @property
     def users(self):
@@ -214,41 +215,50 @@ class WhistlerBot(object):
         if self.client:
             return self.client
 
-        debug = debug=['always', 'nodebuilder'] if self.debug else []
+        self.client = ClientXMPP(self.jid, self.password)
 
-        self.client = xmpp.client.Client(self.jid.getDomain(), debug=debug)
+        # Install event handlers
+        self.client.add_event_handler("session_start", self.handle_session_start)
+        self.client.add_event_handler("message", self.handle_message)
 
-        if not self.client.connect(server=self.server, secure=True):
-            raise WhistlerConnectionError(("unable to connect to %s using "
-                                           "port %d") % self.server)
-        else:
+        # Add plug-ins
+        self.client.registerPlugin("xep_0030") # Service Discovery
+        self.client.registerPlugin("xep_0004") # Data Forms
+        self.client.registerPlugin("xep_0060") # PubSub
+        self.client.registerPlugin("xep_0199") # XMPP Ping
+        self.client.registerPlugin("xep_0045") # Multi-User Chat
+
+        if self.client.connect(self.server or ()):
             self.log.info("connected to %s, port %d" % self.server)
-
-
-        if not self.client.auth(self.jid.getNode(), self.password, self.resource):
-            raise WhistlerConnectionError("unable to authorize user %s"
-                                          % self.jid.getNode())
+            self.client.start_tls()
+            self.log.info("did STARTTLS successfully")
         else:
-            self.log.info("authorized user %s" % self.jid.getNode())
+            raise WhistlerConnectionError(
+                "unable to connect to %s using port %d" % self.server
+            )
 
-
-        self.client.RegisterHandler("message",  self.handle_message)
-        self.client.RegisterHandler("presence", self.handle_presence)
-        self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
-        self.client.RegisterDisconnectHandler(lambda :self.run_handler(EVENT_DISCONNECT))
-
-        self.client.sendInitPresence()
-
-        self.run_handler(EVENT_CONNECT)
-
-        self.join(self.rooms.keys())
-
-        self.idle = WhistlerIdleJob(self.client, 60)
-
-        for user in self._initial_users:
-            self.register_user(user)
+        #self.client.RegisterHandler("message",  self.handle_message)
+        #self.client.RegisterHandler("presence", self.handle_presence)
+        #self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
+        #self.client.RegisterDisconnectHandler(self.on_disconnect)
 
         return self.client
+
+
+    def handle_session_start(self, event):
+        self.client.get_roster()
+        self.client.send_presence()
+        self.on_connect()
+>>>>>>> WIP on migrating to SleekXMPP
+
+        # XXX Is the idle job still needed??
+        self.idle = WhistlerIdleJob(self.client, 60)
+        self.idle.start()
+
+        # FIXME Check that those are okay
+        self.join(self.rooms.keys())
+        for user in self._initial_users:
+            self.register_user(user)
 
 
     def register_command(self, cmdname, cmdfun):
@@ -276,10 +286,7 @@ class WhistlerBot(object):
         if not self.connect():
             raise WhistlerConnectionError("unknown error")
 
-        self.idle.start()
-
-        while self.client.isConnected():
-            self.client.Process(10)
+        self.client.process(threaded=False)
 
 
     def stop(self):
@@ -306,9 +313,7 @@ class WhistlerBot(object):
         if jid in self.rooms:
             return False
 
-        roster = self.client.getRoster()
-
-        if jid in roster.getItems():
+        if jid in self.client.roster():
             return True
         else:
             return False
@@ -317,21 +322,14 @@ class WhistlerBot(object):
     def register_user(self, jid):
         """Register an user as valid user for the bot."""
 
-        roster = self.client.getRoster()
-        roster.Subscribe(jid)
-        roster.Authorize(jid)
-        self.client.send(xmpp.protocol.Presence(to=jid, typ="subscribe"))
+        self.client.update_roster(jid, subscription="both")
 
 
     def unregister_user(self, jid):
         """Unregister an user as valid user for the bot."""
 
         if jid not in self.rooms and jid != self.jid:
-            roster = self.client.getRoster()
-            roster.Unsubscribe(jid)
-            roster.Unauthorize(jid)
-            roster.delItem(jid)
-            self.run_handler(EVENT_UNREGISTER, jid)
+            self.client.update_roster(jid, subscription="remove")
 
 
     def handle_presence(self, client, message):
@@ -357,26 +355,14 @@ class WhistlerBot(object):
             self.run_handler(EVENT_REGISTER, who)
 
 
-    def handle_message(self, client, message):
-        """Handle any received message from the XMPP server.
+    def handle_message(self, message):
+        """ Handle any received message from the XMPP server, this function
+        is designed to work internally, and performs subcalls to any command
+        function defined in the object when the properly command is
+        received. """
 
-        This function is designed to work internally, and performs subcalls
-        to any command function defined in the object when the properly
-        command is received.
-
-        """
-        for node in message.getChildren():
-
-            if node.getAttr("xmlns") == xmpp.NS_MUC_USER or \
-               node.getNamespace() == xmpp.NS_CONFERENCE:
-
-                   room = msg.getFrom().getNode()
-                   serv = msg.getFrom().getDomain()
-
-                   # Begin the join iteration process
-                   self._joining = self.join_room(room, serv)
-                   self._joining.next()
-                   return
+        if message.get_type() == "chat":
+            print "got chat!"
 
 
         if message.getType() == "groupchat":
@@ -432,48 +418,19 @@ class WhistlerBot(object):
             names (*name*@*server*).
 
         """
-        for room in rooms:
-            # Begin the join iteration process
-            try:
-                room, serv = room.split('@')
-            except ValueError:
-                self.log.warning("invalid room ot join: %s" % room)
-                continue
-
-            self._joining = self.join_room(room, serv)
-            self.log.info("joined to %s@%s" % ( room, serv ))
-            self.run_handler(EVENT_JOIN, "%s@%s" % (room,serv))
-
-            self._joining.next()
+        [self.join_room(room) for room in rooms]
 
 
-    def join_room(self, room, server, resource=None):
-        """Join a Multi-User Chat (MUC) room.
+    def join_room(self, room, resource=None):
+        """ Perform a bot join into a MUC room, aditional resource name can
+        be provided to identify the bot in the MUC.
 
         Make the bot join a MUC room. If a nick different from the resource
         name is to be used, it can be specified. This allows for several
         bots to be in the same room.
-
         """
-        self.client.RegisterHandler("presence", self.handle_error)
-        resource = resource or self.resource or "whistler"
-
-        while True:
-            room_presence = xmpp.protocol.JID(node = room, domain = server,
-                    resource = resource)
-            self.client.send(xmpp.protocol.Presence(room_presence))
-            self.rooms[u"%s@%s" % ( room, server ) ] = resource
-
-            no_error = (yield)
-
-            if no_error:
-                break
-
-            resource += "_"
-            self.log.warnings("invalid resource name from room %s, " % room +
-                              "trying new one (%s)" % resource)
-
-        self.client.RegisterHandler("presence", self.handle_presence)
+        self.client.send_presence(pto=room, pfrom=self.jid)
+        self.rooms[room] = resource
 
 
     def leave(self, rooms):
