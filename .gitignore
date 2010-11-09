@@ -1,3 +1,4 @@
 *.py[co]
 *.sw[pa]
 sleek/*
+!sleek
