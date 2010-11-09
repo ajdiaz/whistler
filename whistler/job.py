@@ -75,7 +75,6 @@ class WhistlerIdleJob(WhistlerJob):
 
     def execute(self):
         """ Perform a XMPP Presence update command. """
-
-        self.client.send(xmpp.protocol.Presence())
+        self.client.sendPresence()
 
 
