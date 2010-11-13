@@ -45,6 +45,13 @@ xmpp.NS_CONFERENCE = "jabber:x:conference"
 
 COMMAND_CHAR = "!"
 
+EVENT_JOIN       = 0
+EVENT_CONNECT    = 1
+EVENT_DISCONNECT = 2
+EVENT_REGISTER   = 3
+EVENT_LEAVE      = 4
+EVENT_UNREGISTER = 5
+
 def restricted(fun):
     """ The restricted decorator is designed to work in commands, to check
     if user is in authorized users to perform an action. Example of usage:
@@ -107,8 +114,9 @@ class WhistlerBot(object):
         self.idle = None
         self.client = None
         self.rooms = {}
-        self.handlers = { "connect": [], "disconnect": [],
-                          "register": [], "join": [] }
+        self.handlers = { EVENT_CONNECT: [], EVENT_DISCONNECT: [],
+                          EVENT_REGISTER: [], EVENT_JOIN: [],
+                          EVENT_LEAVE: [] }
 
         for room in rooms or []:
             self.rooms[room] = resource
@@ -128,6 +136,11 @@ class WhistlerBot(object):
             if jid not in self.rooms and jid != self.jid:
                 yield jid
 
+    def run_handler(self, event, *args, **kwargs):
+        """ Performs the handler actions related with specified event. """
+
+        for handler in self.handlers[event]:
+            handler(*args, **kwargs)
 
     def register_handler(self, typ, fun):
         """
@@ -199,12 +212,11 @@ class WhistlerBot(object):
         self.client.RegisterHandler("message",  self.handle_message)
         self.client.RegisterHandler("presence", self.handle_presence)
         self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
-        self.client.RegisterDisconnectHandler(self.on_disconnect)
+        self.client.RegisterDisconnectHandler(lambda :self.run_handler(EVENT_DISCONNECT))
 
         self.client.sendInitPresence()
 
-        for handler in self.handlers["connect"]:
-            handler(self)
+        self.run_handler(EVENT_CONNECT)
 
         self.join(self.rooms.keys())
 
@@ -214,13 +226,6 @@ class WhistlerBot(object):
             self.register_user(user)
 
         return self.client
-
-
-    def on_disconnect(self):
-        """ Macro to claim all disconnect handlers to be executed. """
-
-        for handler in self.handlers["disconnect"]:
-            handler(self)
 
 
     def register_command(self, cmdname, cmdfun):
@@ -291,6 +296,7 @@ class WhistlerBot(object):
             roster.Unsubscribe(jid)
             roster.Unauthorize(jid)
             roster.delItem(jid)
+            self.run_handler(EVENT_UNREGISTER, jid)
 
 
     def handle_presence(self, client, message):
@@ -311,8 +317,7 @@ class WhistlerBot(object):
 
         if presence_type == "subscribed" and who in self._initial_users:
             self._initial_users.discard(who)
-            for handler in self.handlers["register"]:
-                handler(who)
+            self.run_handler(EVENT_REGISTER, who)
 
 
     def handle_message(self, client, message):
@@ -393,6 +398,8 @@ class WhistlerBot(object):
 
             self._joining = self.join_room(room, serv)
             self.log.info("joined to %s@%s" % ( room, serv ))
+            self.run_handler(EVENT_JOIN, "%s@%s" % (room,serv))
+
             self._joining.next()
 
 
@@ -463,6 +470,7 @@ class WhistlerBot(object):
 
         self.client.send(xmpp.protocol.Presence(to=room_presence,
                                                 typ="unavailable"))
+        self.run_handler(EVENT_LEAVE, room_id)
         self.rooms.pop(room_id)
 
 

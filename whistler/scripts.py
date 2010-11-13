@@ -14,7 +14,7 @@ command, provided in basic whistler package.
 
 import sys
 from optparse import OptionParser
-from whistler.bot import WhistlerBot, restricted
+from whistler.bot import WhistlerBot, restricted, EVENT_REGISTER
 from whistler.log import WhistlerLog
 from whistler.mixins import PatchQueueMixin
 
@@ -111,7 +111,7 @@ def main():
                 rooms = options.rooms, server = options.server, log = log,
                 resource = options.resource, users = set(options.users))
         bot.debug = options.debug
-        bot.register_handler("register", bot.on_register_user)
+        bot.register_handler(EVENT_REGISTER, bot.on_register_user)
 
         try:
             bot.start()
