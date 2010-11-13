@@ -79,7 +79,8 @@ class WhistlerBot(object):
 
     def __init__(self, jid, password, server=None, rooms=None,
             resource=None, log=None, users=None):
-        """ Create a new :class:`WhistlerBot` object, the :func:`__init__`
+        """
+        Create a new :class:`WhistlerBot` object, the :func:`__init__`
         receive the following parameters:
 
         :param `jid`: a valid JID atom to identify the bot user.
@@ -106,6 +107,8 @@ class WhistlerBot(object):
         self.idle = None
         self.client = None
         self.rooms = {}
+        self.handlers = { "connect": [], "disconnect": [],
+                          "register": [], "join": [] }
 
         for room in rooms or []:
             self.rooms[room] = resource
@@ -126,22 +129,28 @@ class WhistlerBot(object):
                 yield jid
 
 
-    def on_connect(self):
-        """ This function can be override to handle the connection event.
-        When bot is sucessfully connect, the actions defined in this
-        function will be executed. """
+    def register_handler(self, typ, fun):
+        """
+        Register a new handler to whistler. The handler is a function
+        which will be executed on certain actions.
 
+        :param `typ`: The type of the handler, can be one of following:
+            * connect: *on connect* handler,
+            * disconnect: *on disconnect* handler,
+            * register: *on register user* handler.
+        :param `fun`: a function to be executed, which receive almost
+            an instance of class :class:`WhistlerBot` as parameter. The
+            register type also receive a JID in string notation of the
+            registered user.
+        """
 
-    def on_disconnect(self):
-        """ This function can be override to handle the disconnection event.
-        Before bot is sucessfully disconnect, the actions defined in this
-        function will be executed. """
+        self.handlers[typ].append(fun)
 
 
     def send_to(self, who, data):
         """ Send a chat message to any user. This function is designed to
-        be called from user custom handle functions, like :func:`on_connect`
-        or :func:`on_register_user`.
+        be called from user custom handle functions, using
+        :fun:`register_handler`.
 
         :param `who`: The JID as string representation of the recipient.
         :param `data`: An string which contain the message to be set. """
@@ -161,7 +170,7 @@ class WhistlerBot(object):
 
     def connect(self):
         """ Perform a connection to the server, this function is designed to
-        work internally, but calls to :func:`on_connect` when connection is
+        work internally, but calls to connect handlers when connection is
         sucessfully. """
 
         if self.client:
@@ -194,7 +203,8 @@ class WhistlerBot(object):
 
         self.client.sendInitPresence()
 
-        self.on_connect()
+        for handler in self.handlers["connect"]:
+            handler(self)
 
         self.join(self.rooms.keys())
 
@@ -206,14 +216,11 @@ class WhistlerBot(object):
         return self.client
 
 
-    def on_register_user(self, who):
-        """ This function can be override to handle the registration event.
-        When bot is successfully subscribed to any admin user, the actions
-        defined in this function will be executed.
+    def on_disconnect(self):
+        """ Macro to claim all disconnect handlers to be executed. """
 
-        :param `who`: the JID as string representation of the user which
-            is recenlty added.
-        """
+        for handler in self.handlers["disconnect"]:
+            handler(self)
 
 
     def register_command(self, cmdname, cmdfun):
@@ -304,7 +311,8 @@ class WhistlerBot(object):
 
         if presence_type == "subscribed" and who in self._initial_users:
             self._initial_users.discard(who)
-            self.on_register_user(who)
+            for handler in self.handlers["register"]:
+                handler(who)
 
 
     def handle_message(self, client, message):

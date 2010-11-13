@@ -111,6 +111,7 @@ def main():
                 rooms = options.rooms, server = options.server, log = log,
                 resource = options.resource, users = set(options.users))
         bot.debug = options.debug
+        bot.register_handler("register", bot.on_register_user)
 
         try:
             bot.start()
