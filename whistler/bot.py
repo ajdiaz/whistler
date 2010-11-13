@@ -302,7 +302,7 @@ class WhistlerBot(object):
             self.client.send(xmpp.protocol.Presence(to=who, typ="subscribed"))
             self.client.send(xmpp.protocol.Presence(to=who, typ="subscribe"))
 
-        if presence_type == "subscribed":
+        if presence_type == "subscribed" and who in self._initial_users:
             self._initial_users.discard(who)
             self.on_register_user(who)
 
