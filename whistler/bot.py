@@ -388,7 +388,9 @@ class WhistlerBot(object):
         if command:
             self.log.info("received command %s with arguments %s" % \
                          ( command_n, str(arguments) ))
-            self.send(message, command, arguments)
+            result = command(message, arguments)
+            if result is not None:
+                message.reply(result).send()
 
 
     def handle_error(self, client, message):
@@ -476,27 +478,6 @@ class WhistlerBot(object):
                                                 typ="unavailable"))
         self.run_handler(EVENT_LEAVE, room_id)
         self.rooms.pop(room_id)
-
-
-    def send(self, message, command, arguments=[]):
-        """Send a XMPP message.
-
-        The sent message will contain the result of command execution
-        with the given arguments passed to it. The original message is
-        also provided to the command.
-
-        :param `message`: The original :class:`xmpp.protocol.Message`
-        :param `command`: The command handled.
-        :param `arguments`: a :class:`list` of arguments to the command.
-
-        """
-        reply = command(message, arguments)
-
-        dest = message.getFrom()
-        if message.getType() == "groupchat":
-            dest.setResource("")
-
-        self.client.send(xmpp.protocol.Message(dest, reply, message.getType()))
 
 
 if __name__ == "__main__":
