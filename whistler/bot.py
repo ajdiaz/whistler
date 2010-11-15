@@ -143,9 +143,7 @@ class WhistlerBot(object):
         administrative users or valid users to admin the bot.
 
         """
-        roster = self.client.getRoster()
-
-        for jid in roster.getItems():
+        for jid in self.client.roster.iterkeys():
             if jid not in self.rooms and jid != self.jid:
                 yield jid
 
