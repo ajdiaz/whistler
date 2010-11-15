@@ -140,27 +140,21 @@ class WhistlerBot(object):
 
 
     def send_to(self, who, data):
-        """Send a chat message to any user.
-
-        This function is designed to be called from user custom handle
-        functions, using :fun:`register_handler`.
+        """Send a chat message to an user.
 
         :param `who`: The JID as string representation of the recipient.
         :param `data`: An string which contain the message to be set.
 
         """
-        dest = xmpp.JID(who)
-        self.client.send( xmpp.protocol.Message(dest, data, "chat") )
+        self.client.send_message(dest, data, mtype="chat")
 
 
     def set_subject(self, room, subject):
         """Set a new subject on specified room."""
 
-        if room in self.rooms.keys():
-            dest = xmpp.JID(room)
+        if room in self.rooms:
             mesg = "Whistler set subject to: %s" % subject
-            self.client.send( xmpp.protocol.Message(dest, mesg,
-                              "groupchat", subject=subject) )
+            self.client.send_message(room, mesg, subject, "groupchat")
 
 
     def connect(self):
