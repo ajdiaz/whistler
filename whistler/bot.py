@@ -41,6 +41,16 @@ import xmpp
 from whistler.log import WhistlerLog
 from whistler.job import WhistlerIdleJob
 
+try:
+    from functools import update_wrapper
+except ImportError:
+    # Old (pre 2.6) Python does not have it, provide a simple replacement
+    def update_wrapper(wrapper, wrapped, *arg, **kw):
+        wrapper.__name__ = wrapped.__name__
+        wrapper.__doc__  = getattr(wrapped, "__doc__", None)
+        return wrapper
+
+
 xmpp.NS_CONFERENCE = "jabber:x:conference"
 
 COMMAND_CHAR = "!"
@@ -71,7 +81,7 @@ def restricted(fun):
         else:
             self.log.warning("ignoring command %s, invalid user %s." % \
                             ( fun.__name__[4:], user ))
-    return new
+    return update_wrapper(new, fun)
 
 
 class WhistlerConnectionError(Exception):
