@@ -63,8 +63,11 @@ EVENT_LEAVE      = 4
 EVENT_UNREGISTER = 5
 
 def restricted(fun):
-    """ The restricted decorator is designed to work in commands, to check
-    if user is in authorized users to perform an action. Example of usage:
+    """Decorator to restrict access to bot functionality.
+
+    The restricted decorator is designed to work in commands, to check
+    whether the user is in authorized users to perform an action. Example
+    of usage:
 
     .. code-block:: python
 
@@ -72,8 +75,9 @@ def restricted(fun):
       def cmd_ping(self, msg, args):
           return "pong"
 
-    In this example ping command is only allowed to authenticated users. """
+    In this example ping command is only allowed to authenticated users.
 
+    """
     def new(self, msg, args):
         user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
         if self.is_validuser(user):
@@ -85,18 +89,22 @@ def restricted(fun):
 
 
 class WhistlerConnectionError(Exception):
-    """ A exception which will be raised on bot connection error. """
+    """Exception which will be raised on bot connection error."""
 
 
 class WhistlerBot(object):
-    """ The main WhistlerBot class handle the bot behaviour and
-    perform subcall to specific command handler when a command
-    is received in a configured MUC channel. """
+    """Main Whistler bot class.
 
+    The main WhistlerBot class handle the bot behaviour and perform subcall
+    to specific command handler when a command is received in a configured
+    MUC channel.
+
+    """
 
     def __init__(self, jid, password, server=None, rooms=None,
             resource=None, log=None, users=None):
-        """
+        """Initialize a Whistler bot.
+
         Create a new :class:`WhistlerBot` object, the :func:`__init__`
         receive the following parameters:
 
@@ -112,8 +120,8 @@ class WhistlerBot(object):
             *stdout* if none is provided.
         :param `users`: a :class:`set` of valid JID as strings which
             identify master users.
-        """
 
+        """
         self.jid = xmpp.JID(jid)
         self.password = password
         self.server = server or ( self.jid.getDomain(), 5222 )
@@ -137,9 +145,12 @@ class WhistlerBot(object):
 
     @property
     def users(self):
-        """ A property which return an iterator over users in bot roster, that is
-        administrative users or valid users to admin the bot. """
+        """Users in the bot roster (administrators)
 
+        A property which return an iterator over users in bot roster, that is
+        administrative users or valid users to admin the bot.
+
+        """
         roster = self.client.getRoster()
 
         for jid in roster.getItems():
@@ -147,7 +158,7 @@ class WhistlerBot(object):
                 yield jid
 
     def run_handler(self, event, *args, **kwargs):
-        """ Performs the handler actions related with specified event. """
+        """Performs the handler actions related with specified event."""
 
         for handler in self.handlers[event]:
             handler(*args, **kwargs)
@@ -166,23 +177,25 @@ class WhistlerBot(object):
             register type also receive a JID in string notation of the
             registered user.
         """
-
         self.handlers[typ].append(fun)
 
 
     def send_to(self, who, data):
-        """ Send a chat message to any user. This function is designed to
-        be called from user custom handle functions, using
-        :fun:`register_handler`.
+        """Send a chat message to any user.
+
+        This function is designed to be called from user custom handle
+        functions, using :fun:`register_handler`.
 
         :param `who`: The JID as string representation of the recipient.
-        :param `data`: An string which contain the message to be set. """
+        :param `data`: An string which contain the message to be set.
+
+        """
         dest = xmpp.JID(who)
         self.client.send( xmpp.protocol.Message(dest, data, "chat") )
 
 
     def set_subject(self, room, subject):
-        """ Set a new subject on specified room. """
+        """Set a new subject on specified room."""
 
         if room in self.rooms.keys():
             dest = xmpp.JID(room)
@@ -192,10 +205,12 @@ class WhistlerBot(object):
 
 
     def connect(self):
-        """ Perform a connection to the server, this function is designed to
-        work internally, but calls to connect handlers when connection is
-        sucessfully. """
+        """Perform a connection to the server.
 
+        This function is designed to work internally, but calls to connect
+        handlers when connection is sucessful.
+
+        """
         if self.client:
             return self.client
 
@@ -204,17 +219,15 @@ class WhistlerBot(object):
         self.client = xmpp.client.Client(self.jid.getDomain(), debug=debug)
 
         if not self.client.connect(server=self.server, secure=True):
-            raise WhistlerConnectionError(
-                "unable to connect to %s using port %d" % self.server
-            )
+            raise WhistlerConnectionError(("unable to connect to %s using "
+                                           "port %d") % self.server)
         else:
             self.log.info("connected to %s, port %d" % self.server)
 
 
         if not self.client.auth(self.jid.getNode(), self.password, self.resource):
-            raise WhistlerConnectionError(
-                "unable to authorize user %s" % self.jid.getNode()
-            )
+            raise WhistlerConnectionError("unable to authorize user %s"
+                                          % self.jid.getNode())
         else:
             self.log.info("authorized user %s" % self.jid.getNode())
 
@@ -239,21 +252,27 @@ class WhistlerBot(object):
 
 
     def register_command(self, cmdname, cmdfun):
-        """ Register on the fly a new command. This function intend to
-        provide a way to add commands on-the-fly, when :class:`WhistlerBot`
-        is alreay instanced.
+        """Register a new command.
+
+        This function in intended to provide a way to add commands
+        on-the-fly, when :class:`WhistlerBot` is alreay instanced.
 
         :param `cmdname`: a name to this command.
         :param `cmdfun`: a callback which can accept three arguments, which
-            will be usd when command called. """
+            will be usd when command called.
 
+        """
         setattr(self, "cmd_%s" % cmdname, cmdfun)
 
 
     def start(self):
-        """ Start to serve the bot, until finished signal is received, using
-        for that the :func:`stop`. """
+        """Start bot operation.
 
+        Connect to the XMPP server and start the bot, it will be serving
+        requests until the stopping is requested, using :func:`stop`
+        function.
+
+        """
         if not self.connect():
             raise WhistlerConnectionError("unknown error")
 
@@ -264,9 +283,12 @@ class WhistlerBot(object):
 
 
     def stop(self):
-        """ Stop the bot to serve, this function also destroy current
-        connection if exists. """
+        """Stop bot operation.
 
+        Stop serving requests. This function also destroys the current
+        connection, if existed.
+
+        """
         self.disconnect()
 
         if self.idle:
@@ -274,10 +296,13 @@ class WhistlerBot(object):
 
 
     def is_validuser(self, jid):
-        """ Return if the specified user is registered as valid user in the
-        bot, according to :func:`register_user` and :func:`unregister_user`
-        functions. """
+        """Check for whether an user is valid.
 
+        Check whether the specified user is registered as valid user in the
+        bot, according to :func:`register_user` and :func:`unregister_user`
+        functions.
+
+        """
         if jid in self.rooms:
             return False
 
@@ -290,7 +315,7 @@ class WhistlerBot(object):
 
 
     def register_user(self, jid):
-        """ Register an user as valid user for the bot. """
+        """Register an user as valid user for the bot."""
 
         roster = self.client.getRoster()
         roster.Subscribe(jid)
@@ -299,7 +324,7 @@ class WhistlerBot(object):
 
 
     def unregister_user(self, jid):
-        """ Unregister an user as valid user for the bot. """
+        """Unregister an user as valid user for the bot."""
 
         if jid not in self.rooms and jid != self.jid:
             roster = self.client.getRoster()
@@ -310,10 +335,12 @@ class WhistlerBot(object):
 
 
     def handle_presence(self, client, message):
-        """ Handle the presence in XMPP server, this function is designed to
-        work internally to bot, and handle the presence subscription
-        XMPP message. """
+        """Handle the presence in XMPP server.
 
+        This function is designed to work internally to bot, and handle the
+        presence subscription XMPP message.
+
+        """
         presence_type = message.getType()
         who = message.getFrom()
 
@@ -331,11 +358,13 @@ class WhistlerBot(object):
 
 
     def handle_message(self, client, message):
-        """ Handle any received message from the XMPP server, this function
-        is designed to work internally, and performs subcalls to any command
-        function defined in the object when the properly command is
-        received. """
+        """Handle any received message from the XMPP server.
 
+        This function is designed to work internally, and performs subcalls
+        to any command function defined in the object when the properly
+        command is received.
+
+        """
         for node in message.getChildren():
 
             if node.getAttr("xmlns") == xmpp.NS_MUC_USER or \
@@ -382,9 +411,11 @@ class WhistlerBot(object):
 
 
     def handle_error(self, client, message):
-        """ Handle error when register presence on groupchat, this function
-        provide a way to rejoin on some kind of errors. """
+        """Handle error when register presence on groupchat.
 
+        This function provide a way to rejoin on some kind of errors.
+
+        """
         try:
             if message.getType == "error" and msg.getErrorCode() == "409":
                 self._joining.send(False)
@@ -395,9 +426,12 @@ class WhistlerBot(object):
 
 
     def join(self, rooms):
-        """ Join into rooms specified in argument, as a :class:`list` of
-        strings which contain valid room names (*name*@*server*). """
+        """Join into rooms specified in argument.
 
+        :param rooms: :class:`list` of strings which contain valid room
+            names (*name*@*server*).
+
+        """
         for room in rooms:
             # Begin the join iteration process
             try:
@@ -414,13 +448,13 @@ class WhistlerBot(object):
 
 
     def join_room(self, room, server, resource=None):
-        """ Perform a bot join into a MUC room, aditional resource name can
-        be provided to identify the bot in the MUC.
+        """Join a Multi-User Chat (MUC) room.
 
-        :param `room`: The room name (whitout server statement).
-        :param `server`: The conference server where room lives.
-        :param `resource`: A resource name for the bot in the room.  """
+        Make the bot join a MUC room. If a nick different from the resource
+        name is to be used, it can be specified. This allows for several
+        bots to be in the same room.
 
+        """
         self.client.RegisterHandler("presence", self.handle_error)
         resource = resource or self.resource or "whistler"
 
@@ -443,9 +477,12 @@ class WhistlerBot(object):
 
 
     def leave(self, rooms):
-        """ Leave the rooms specified in argument, as a :class:`list` of
-        strings which contain valid room names (*name*@*server*). """
+        """Leave the rooms specified in argument.
 
+        :param rooms: :class:`list` of strings which contain valid room
+            names (*name*@*server*).
+
+        """
         for room in rooms:
             try:
                 room, server = room.split('@')
@@ -458,9 +495,12 @@ class WhistlerBot(object):
 
 
     def disconnect(self):
-        """ Leave the server, setting the bot presence to unavailable
-        and close server connections. """
+        """Disconnect from the server.
 
+        Leave all rooms, sets bot presence to unavailable, and closes the
+        connection to the server.
+
+        """
         self.client.UnregisterHandler("message", self.handle_message)
         self.client.UnregisterHandler("presence", self.handle_presence)
         self.log.info("Shutting down the bot...")
@@ -468,12 +508,14 @@ class WhistlerBot(object):
 
 
     def leave_room(self, room, server, resource=None):
-        """ Perform an action to leave a room where currently the bot is in.
+        """
+        Perform an action to leave a room where currently the bot is in.
 
         :param `room`: the room name to leave.
         :param `server`: the server where room is.
-        :param `resource`: the resource which leaves. """
+        :param `resource`: the resource which leaves.
 
+        """
         room_id = "%s@%s" % ( room, server)
         room_presence = xmpp.protocol.JID(node = room, domain=server,
                     resource = resource or self.rooms[room_id])
@@ -485,14 +527,17 @@ class WhistlerBot(object):
 
 
     def send(self, message, command, arguments=[]):
-        """ Send a XMPP message contains the result of command execution
-        with arguments passed. The original message is also provided to
-        known who sent the command.
+        """Send a XMPP message.
+
+        The sent message will contain the result of command execution
+        with the given arguments passed to it. The original message is
+        also provided to the command.
 
         :param `message`: The original :class:`xmpp.protocol.Message`
         :param `command`: The command handled.
-        :param `arguments`: a :class:`list` of arguments to the command. """
+        :param `arguments`: a :class:`list` of arguments to the command.
 
+        """
         reply = command(message, arguments)
 
         dest = message.getFrom()

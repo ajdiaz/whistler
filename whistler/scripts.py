@@ -20,7 +20,7 @@ from whistler.mixins import PatchQueueMixin
 
 
 class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
-    """ Extend basic whistler bot, adding some functionalities. """
+    """Extend basic whistler bot, adding some functionalities."""
 
     def on_register_user(self, who):
         self.send_to(who,"Hi %s, now you are a whistler administrator." % who)
@@ -65,9 +65,12 @@ class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
 
 
 def main():
-    """ Main console script function, which run a operational bot on an
-    specific room list which is defined in command line. """
+    """Main console script function.
 
+    Runs an operational bot on a specific room list which is defined in
+    the command line.
+
+    """
     parser = OptionParser()
     parser.add_option("-r", "--resource", action="store", dest="resource",
         default="whistler", type="str", help="The bot resource name.")
