@@ -135,9 +135,8 @@ class WhistlerBot(object):
         administrative users or valid users to admin the bot.
 
         """
-        for jid in self.client.roster.iterkeys():
-            if jid not in self.rooms and jid != self.jid:
-                yield jid
+        return (jid for jid in self.client.roster.iterkeys()
+                if jid not in self.rooms and jid != self.jid)
 
 
     def send_to(self, who, data):
