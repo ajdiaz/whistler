@@ -179,6 +179,7 @@ class WhistlerBot(object):
         self.client = ClientXMPP(self.jid, self.password)
 
         # Install event handlers
+        self.client.add_event_handler("groupchat_message", self.handle_muc_message)
         self.client.add_event_handler("session_start", self.handle_session_start)
         self.client.add_event_handler("message", self.handle_message)
 
@@ -299,27 +300,14 @@ class WhistlerBot(object):
 
         if presence_type == "subscribed" and who in self._initial_users:
             self._initial_users.discard(who)
-            self.run_handler(EVENT_REGISTER, who)
 
 
-    def handle_message(self, message):
-        """ Handle any received message from the XMPP server, this function
-        is designed to work internally, and performs subcalls to any command
-        function defined in the object when the properly command is
-        received. """
+    def hande_muc_message(self, message):
+        """ Handle any received group chat message.
 
-        if message.get_type() == "chat":
-            print "got chat!"
+        :param message: Message received from the MUC room.
 
-
-        if message.getType() == "groupchat":
-            _room = message.getFrom()
-            room  = "%s@%s" % ( _room.getNode(), _room.getDomain() )
-
-            if room in self.rooms.keys() and \
-               self.rooms[room] == _room.getResource():
-                   return
-
+        """
         body = message["body"]
 
         if not body or (body[0] != COMMAND_CHAR \
@@ -338,36 +326,33 @@ class WhistlerBot(object):
         command = getattr(self, "cmd_%s" % command_n, None)
 
         if command:
-            self.log.info("received command %s with arguments %s" % \
-                         ( command_n, str(arguments) ))
+            self.log.info("muc command %s %r" % (command_n, arguments))
+            result = command(message, arguments)
+            if result is not None:
+                message.reply(result).send()
+
+    def handle_message(self, message):
+        """Handle a received chat message."""
+
+        if not message["body"]:
+            return
+
+        body = message["body"].split()
+
+        command_n = body[0]
+        arguments = body[1:]
+
+        command = getattr(self, "cmd_%s" % command_n, None)
+
+        if command:
+            self.log.info("chat command %s %r" % (command_n, arguments))
             result = command(message, arguments)
             if result is not None:
                 message.reply(result).send()
 
 
-    def handle_error(self, client, message):
-        """Handle error when register presence on groupchat.
-
-        This function provide a way to rejoin on some kind of errors.
-
-        """
-        try:
-            if message.getType == "error" and msg.getErrorCode() == "409":
-                self._joining.send(False)
-            else:
-                self._joining.send(True)
-        except StopIteration:
-            pass
-
-
     def join(self, rooms):
-        """Join into rooms specified in argument.
-
-        :param rooms: :class:`list` of strings which contain valid room
-            names (*name*@*server*).
-
-        """
-        [self.join_room(room) for room in rooms]
+        [self.join(room) for room in rooms]
 
 
     def join_room(self, room, resource=None):
