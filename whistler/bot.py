@@ -184,11 +184,11 @@ class WhistlerBot(object):
         self.client.add_event_handler("message", self.handle_message)
 
         # Add plug-ins
-        self.client.registerPlugin("xep_0030") # Service Discovery
-        self.client.registerPlugin("xep_0004") # Data Forms
-        self.client.registerPlugin("xep_0060") # PubSub
-        self.client.registerPlugin("xep_0199") # XMPP Ping
-        self.client.registerPlugin("xep_0045") # Multi-User Chat
+        self.client.register_plugin("xep_0030") # Service Discovery
+        self.client.register_plugin("xep_0004") # Data Forms
+        self.client.register_plugin("xep_0060") # PubSub
+        self.client.register_plugin("xep_0199") # XMPP Ping
+        self.client.register_plugin("xep_0045") # Multi-User Chat
 
         if self.client.connect(self.server or ()):
             self.log.info("connected to %s, port %d" % self.server)
