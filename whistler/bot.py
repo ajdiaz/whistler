@@ -368,7 +368,7 @@ class WhistlerBot(object):
                self.rooms[room] == _room.getResource():
                    return
 
-        body = message.getBody()
+        body = message["body"]
 
         if not body or (body[0] != COMMAND_CHAR \
                 and not body.startswith(self.resource + ", ") \
@@ -502,7 +502,7 @@ class WhistlerBot(object):
 if __name__ == "__main__":
     class TestBot(WhistlerBot):
         def cmd_echo(self, msg, args):
-            text = msg.getBody()
+            text = msg["body"]
             return text
 
         def cmd_list_rooms(self, msg, args):
