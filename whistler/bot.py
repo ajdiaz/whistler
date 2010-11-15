@@ -52,12 +52,6 @@ from whistler.job import WhistlerIdleJob
 
 COMMAND_CHAR = "!"
 
-EVENT_JOIN       = 0
-EVENT_CONNECT    = 1
-EVENT_DISCONNECT = 2
-EVENT_REGISTER   = 3
-EVENT_LEAVE      = 4
-EVENT_UNREGISTER = 5
 
 def restricted(fun):
     """Decorator to restrict access to bot functionality.
@@ -147,28 +141,6 @@ class WhistlerBot(object):
             if jid not in self.rooms and jid != self.jid:
                 yield jid
 
-    def run_handler(self, event, *args, **kwargs):
-        """Performs the handler actions related with specified event."""
-
-        for handler in self.handlers[event]:
-            handler(*args, **kwargs)
-
-    def register_handler(self, typ, fun):
-        """
-        Register a new handler to whistler. The handler is a function
-        which will be executed on certain actions.
-
-        :param `typ`: The type of the handler, can be one of following:
-            * connect: *on connect* handler,
-            * disconnect: *on disconnect* handler,
-            * register: *on register user* handler.
-        :param `fun`: a function to be executed, which receive almost
-            an instance of class :class:`WhistlerBot` as parameter. The
-            register type also receive a JID in string notation of the
-            registered user.
-        """
-        self.handlers[typ].append(fun)
-
 
     def send_to(self, who, data):
         """Send a chat message to any user.
@@ -221,16 +193,10 @@ class WhistlerBot(object):
             self.log.info("connected to %s, port %d" % self.server)
             self.client.start_tls()
             self.log.info("did STARTTLS successfully")
-            self.run_handler(EVENT_CONNECT)
         else:
             raise WhistlerConnectionError(
                 "unable to connect to %s using port %d" % self.server
             )
-
-        #self.client.RegisterHandler("message",  self.handle_message)
-        #self.client.RegisterHandler("presence", self.handle_presence)
-        #self.client.UnregisterDisconnectHandler(self.client.DisconnectHandler)
-        #self.client.RegisterDisconnectHandler(self.on_disconnect)
 
         return self.client
 
@@ -238,7 +204,6 @@ class WhistlerBot(object):
     def handle_session_start(self, event):
         self.client.get_roster()
         self.client.send_presence()
-        self.on_connect()
 
         # XXX Is the idle job still needed??
         self.idle = WhistlerIdleJob(self.client, 60)
