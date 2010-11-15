@@ -76,7 +76,7 @@ def restricted(fun):
 
     """
     def new(self, msg, args):
-        user = "%s@%s" % (msg.getFrom().getNode(), msg.getFrom().getDomain())
+        user = msg["from"].bare
         if self.is_validuser(user):
             return fun(self, msg, args)
         else:
@@ -307,13 +307,7 @@ class WhistlerBot(object):
         functions.
 
         """
-        if jid in self.rooms:
-            return False
-
-        if jid in self.client.roster():
-            return True
-        else:
-            return False
+        return jid not in self.rooms and jid in self.client.roster
 
 
     def register_user(self, jid):
