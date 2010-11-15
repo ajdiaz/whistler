@@ -128,18 +128,12 @@ class WhistlerBot(object):
 
         self.idle = None
         self.client = None
-        self.rooms = {}
-        self.handlers = { EVENT_CONNECT: [], EVENT_DISCONNECT: [],
-                          EVENT_REGISTER: [], EVENT_JOIN: [],
-                          EVENT_LEAVE: [] }
-
-        for room in rooms or []:
-            self.rooms[room] = resource
 
         self.resource = resource or self.__class__.__name__.lower() + \
                                     str(random.getrandbits(32))
 
         self.jid += "/" + self.resource
+        self.rooms = set(rooms or [])
 
     @property
     def users(self):
@@ -247,8 +241,7 @@ class WhistlerBot(object):
         self.idle = WhistlerIdleJob(self.client, 60)
         self.idle.start()
 
-        # FIXME Check that those are okay
-        self.join(self.rooms.keys())
+        [self.join_room(room) for room in self.rooms]
         for user in self._initial_users:
             self.register_user(user)
 
@@ -417,26 +410,7 @@ class WhistlerBot(object):
         name is to be used, it can be specified. This allows for several
         bots to be in the same room.
         """
-        self.client.send_presence(pto=room, pfrom=self.jid)
-        self.rooms[room] = resource
-
-
-    def leave(self, rooms):
-        """Leave the rooms specified in argument.
-
-        :param rooms: :class:`list` of strings which contain valid room
-            names (*name*@*server*).
-
-        """
-        for room in rooms:
-            try:
-                room, server = room.split('@')
-            except ValueError:
-                self.log.warning("invalid room to leave: %s" % room)
-                continue
-
-            self.log.info("leaving room: %s@%s" % (room, server))
-            self.leave_room(room, server)
+        self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource)
 
 
     def disconnect(self):
@@ -446,29 +420,20 @@ class WhistlerBot(object):
         connection to the server.
 
         """
-        self.client.UnregisterHandler("message", self.handle_message)
-        self.client.UnregisterHandler("presence", self.handle_presence)
         self.log.info("Shutting down the bot...")
-        self.client.disconnected()
+        [self.leave_room(room) for room in self.rooms]
+        self.client.disconnect()
 
 
-    def leave_room(self, room, server, resource=None):
+    def leave_room(self, room, resource=None):
         """
         Perform an action to leave a room where currently the bot is in.
 
         :param `room`: the room name to leave.
-        :param `server`: the server where room is.
         :param `resource`: the resource which leaves.
 
         """
-        room_id = "%s@%s" % ( room, server)
-        room_presence = xmpp.protocol.JID(node = room, domain=server,
-                    resource = resource or self.rooms[room_id])
-
-        self.client.send(xmpp.protocol.Presence(to=room_presence,
-                                                typ="unavailable"))
-        self.run_handler(EVENT_LEAVE, room_id)
-        self.rooms.pop(room_id)
+        self.client.plugin["xep_0045"].leaveMUC(room, resource or self.resource)
 
 
 if __name__ == "__main__":
