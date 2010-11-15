@@ -48,7 +48,6 @@ except ImportError:
 from sleekxmpp.clientxmpp import ClientXMPP
 
 from whistler.log import WhistlerLog
-from whistler.job import WhistlerIdleJob
 
 COMMAND_CHAR = "!"
 
@@ -120,7 +119,6 @@ class WhistlerBot(object):
         self.debug = False
         self._initial_users = users
 
-        self.idle = None
         self.client = None
 
         self.resource = resource or self.__class__.__name__.lower() + \
@@ -205,11 +203,6 @@ class WhistlerBot(object):
     def handle_session_start(self, event):
         self.client.get_roster()
         self.client.send_presence()
-
-        # XXX Is the idle job still needed??
-        self.idle = WhistlerIdleJob(self.client, 60)
-        self.idle.start()
-
         [self.join_room(room) for room in self.rooms]
         for user in self._initial_users:
             self.register_user(user)
@@ -251,9 +244,6 @@ class WhistlerBot(object):
 
         """
         self.disconnect()
-
-        if self.idle:
-            self.idle.stop()
 
 
     def is_validuser(self, jid):

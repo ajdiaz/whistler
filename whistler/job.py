@@ -55,26 +55,3 @@ class WhistlerJob(threading.Thread):
         raise NotImplementedError()
 
 
-class WhistlerIdleJob(WhistlerJob):
-    """ Perform idle job, that is the presence set each a number of seconds
-    to ensure that the bot is still connected to the server. """
-
-
-    def __init__(self, client, seconds=10, **kwargs):
-        """
-        Create a new :class:PingThread for the node passed as argument,
-        which send a broadcast to the network to report his location.
-
-        :param node: a :class:NosyNode node to send the ping.
-        """
-
-        super(WhistlerIdleJob, self).__init__(seconds, **kwargs)
-        self.client = client
-        self.name = "IdleJob"
-
-
-    def execute(self):
-        """ Perform a XMPP Presence update command. """
-        self.client.sendPresence()
-
-
