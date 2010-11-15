@@ -313,8 +313,24 @@ class WhistlerBot(object):
                 message.reply(result).send()
 
 
-    def join(self, rooms):
-        [self.join(room) for room in rooms]
+    def join(self, rooms, resource=None):
+        """Join several rooms at once.
+
+        :param rooms: Iterable with room JIDs as strings.
+        :param resource: If given, nickname (resource) used in rooms.
+
+        """
+        [self.join_room(room, resource) for room in rooms]
+
+
+    def leave(self, rooms, resource=None):
+        """Leave several rooms at once.
+
+        :param rooms: Iterable with rooms JIDs as strings.
+        :param resource: If given, nickname (resource) used in rooms.
+
+        """
+        [self.leave_room(room, resource) for room in rooms]
 
 
     def join_room(self, room, resource=None):
