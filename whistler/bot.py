@@ -276,8 +276,7 @@ class WhistlerBot(object):
     def unregister_user(self, jid):
         """Unregister an user as valid user for the bot."""
 
-        if jid not in self.rooms and jid != self.jid:
-            self.client.update_roster(jid, subscription="remove")
+        self.client.update_roster(jid, subscription="remove")
 
 
     def handle_presence(self, client, message):
