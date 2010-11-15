@@ -186,9 +186,8 @@ class WhistlerBot(object):
             self.client.start_tls()
             self.log.info("did STARTTLS successfully")
         else:
-            raise WhistlerConnectionError(
-                "unable to connect to %s using port %d" % self.server
-            )
+            raise WhistlerConnectionError("Unable to connect to %s:%d"
+                    % self.server)
 
         return self.client
 
@@ -285,7 +284,7 @@ class WhistlerBot(object):
 
 
     def hande_muc_message(self, message):
-        """ Handle any received group chat message.
+        """Handle any received group chat message.
 
         :param message: Message received from the MUC room.
 
@@ -314,8 +313,11 @@ class WhistlerBot(object):
                 message.reply(result).send()
 
     def handle_message(self, message):
-        """Handle a received chat message."""
+        """Handle a direct chat message.
 
+        :param message: Message received from some user.
+
+        """
         if not message["body"]:
             return
 
@@ -338,12 +340,14 @@ class WhistlerBot(object):
 
 
     def join_room(self, room, resource=None):
-        """ Perform a bot join into a MUC room, aditional resource name can
-        be provided to identify the bot in the MUC.
+        """Join a Multi-User Chat (MUC) room.
 
         Make the bot join a MUC room. If a nick different from the resource
         name is to be used, it can be specified. This allows for several
         bots to be in the same room.
+
+        :param `room`: The room name.
+        :param `resource`: A resource name for the bot in the room.
         """
         self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource)
 
@@ -361,8 +365,7 @@ class WhistlerBot(object):
 
 
     def leave_room(self, room, resource=None):
-        """
-        Perform an action to leave a room where currently the bot is in.
+        """Leaves a Multi-User Chat (MUC) room.
 
         :param `room`: the room name to leave.
         :param `resource`: the resource which leaves.
