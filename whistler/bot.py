@@ -182,9 +182,8 @@ class WhistlerBot(object):
         self.client.register_plugin("xep_0045") # Multi-User Chat
 
         if self.client.connect(self.server or ()):
-            self.log.info("connected to %s, port %d" % self.server)
             self.client.start_tls()
-            self.log.info("did STARTTLS successfully")
+            self.log.info("connected to %s, port %d" % self.server)
         else:
             raise WhistlerConnectionError("Unable to connect to %s:%d"
                     % self.server)
