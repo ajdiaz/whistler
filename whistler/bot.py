@@ -50,9 +50,6 @@ from sleekxmpp.clientxmpp import ClientXMPP
 from whistler.log import WhistlerLog
 from whistler.job import WhistlerIdleJob
 
-
-NS_CONFERENCE = "jabber:x:conference"
-
 COMMAND_CHAR = "!"
 
 EVENT_JOIN       = 0
