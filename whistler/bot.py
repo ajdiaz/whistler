@@ -391,14 +391,13 @@ class WhistlerBot(object):
 if __name__ == "__main__":
     class TestBot(WhistlerBot):
         def cmd_echo(self, msg, args):
-            text = msg["body"]
-            return text
+            return msg["body"]
 
         def cmd_list_rooms(self, msg, args):
-            return ', '.join(self.rooms.keys())
+            return ', '.join(self.client["xep_0045"].rooms.keys())
 
         def cmd_whoami(self, msg, args):
-            return "You are %s" % msg.getFrom()
+            return "You are %s" % msg["from"]
 
     try:
         b = TestBot('test@connectical.com',  'password',
