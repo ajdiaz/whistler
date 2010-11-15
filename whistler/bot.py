@@ -261,29 +261,7 @@ class WhistlerBot(object):
         self.client.update_roster(jid, subscription="remove")
 
 
-    def handle_presence(self, client, message):
-        """Handle the presence in XMPP server.
-
-        This function is designed to work internally to bot, and handle the
-        presence subscription XMPP message.
-
-        """
-        presence_type = message.getType()
-        who = message.getFrom()
-
-        if presence_type == "subscribe":
-
-            if who not in self._initial_users:
-                return
-
-            self.client.send(xmpp.protocol.Presence(to=who, typ="subscribed"))
-            self.client.send(xmpp.protocol.Presence(to=who, typ="subscribe"))
-
-        if presence_type == "subscribed" and who in self._initial_users:
-            self._initial_users.discard(who)
-
-
-    def hande_muc_message(self, message):
+    def handle_muc_message(self, message):
         """Handle any received group chat message.
 
         :param message: Message received from the MUC room.
