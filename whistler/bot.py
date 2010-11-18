@@ -51,6 +51,12 @@ from whistler.log import WhistlerLog
 
 COMMAND_CHAR = "!"
 
+EVENT_JOIN       = 0
+EVENT_CONNECT    = 1
+EVENT_DISCONNECT = 2
+EVENT_REGISTER   = 3
+EVENT_LEAVE      = 4
+EVENT_UNREGISTER = 5
 
 def restricted(fun):
     """Decorator to restrict access to bot functionality.
@@ -118,6 +124,9 @@ class WhistlerBot(object):
         self.log = log or WhistlerLog()
         self.debug = False
         self._initial_users = users
+        self.handlers = { EVENT_CONNECT: [], EVENT_DISCONNECT: [],
+                          EVENT_REGISTER: [], EVENT_JOIN: [],
+                          EVENT_LEAVE: [] }
 
         self.client = None
 
@@ -138,6 +147,26 @@ class WhistlerBot(object):
         return (jid for jid in self.client.roster.iterkeys()
                 if jid not in self.rooms and jid != self.jid)
 
+    def run_handler(self, event, *args, **kwargs):
+        """Performs the handler actions related with specified event."""
+
+        for handler in self.handlers[event]:
+            handler(*args, **kwargs)
+
+    def register_handler(self, typ, fun):
+        """Register a new handler to whistler. The handler is a function
+        which will be executed on certain actions.
+
+        :param `typ`: The type of the handler, can be one of following:
+            * connect: *on connect* handler,
+            * disconnect: *on disconnect* handler,
+            * register: *on register user* handler.
+        :param `fun`: a function to be executed, which receive almost
+            an instance of class :class:`WhistlerBot` as parameter. The
+            register type also receive a JID in string notation of the
+            registered user.
+        """
+        self.handlers[typ].append(fun)
 
     def send_to(self, who, data):
         """Send a chat message to an user.
@@ -187,6 +216,8 @@ class WhistlerBot(object):
         else:
             raise WhistlerConnectionError("Unable to connect to %s:%d"
                     % self.server)
+
+        self.run_handler(EVENT_CONNECT)
 
         return self.client
 
@@ -252,12 +283,14 @@ class WhistlerBot(object):
         """Register an user as valid user for the bot."""
 
         self.client.update_roster(jid, subscription="both")
+        self.run_handler(EVENT_REGISTER, jid)
 
 
     def unregister_user(self, jid):
         """Unregister an user as valid user for the bot."""
 
         self.client.update_roster(jid, subscription="remove")
+        self.run_handler(EVENT_UNREGISTER, jid)
 
 
     def handle_muc_message(self, message):
@@ -343,6 +376,7 @@ class WhistlerBot(object):
         :param `resource`: A resource name for the bot in the room.
         """
         self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource)
+        self.run_handler(EVENT_JOIN, room)
 
 
     def disconnect(self):
@@ -354,6 +388,7 @@ class WhistlerBot(object):
         """
         self.log.info("Shutting down the bot...")
         [self.leave_room(room) for room in self.rooms]
+        self.run_handler(EVENT_DISCONNECT)
         self.client.disconnect()
 
 
@@ -365,6 +400,7 @@ class WhistlerBot(object):
 
         """
         self.client.plugin["xep_0045"].leaveMUC(room, resource or self.resource)
+        self.run_handler(EVENT_LEAVE, room)
 
 
 if __name__ == "__main__":
