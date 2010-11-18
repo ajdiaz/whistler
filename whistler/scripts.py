@@ -14,13 +14,13 @@ command, provided in basic whistler package.
 
 import sys
 from optparse import OptionParser
-from whistler.bot import WhistlerBot, restricted
+from whistler.bot import WhistlerBot, restricted, EVENT_REGISTER
 from whistler.log import WhistlerLog
 from whistler.mixins import PatchQueueMixin
 
 
 class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
-    """ Extend basic whistler bot, adding some functionalities. """
+    """Extend basic whistler bot, adding some functionalities."""
 
     def on_register_user(self, who):
         self.send_to(who,"Hi %s, now you are a whistler administrator." % who)
@@ -65,9 +65,12 @@ class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
 
 
 def main():
-    """ Main console script function, which run a operational bot on an
-    specific room list which is defined in command line. """
+    """Main console script function.
 
+    Runs an operational bot on a specific room list which is defined in
+    the command line.
+
+    """
     parser = OptionParser()
     parser.add_option("-r", "--resource", action="store", dest="resource",
         default="whistler", type="str", help="The bot resource name.")
@@ -111,6 +114,7 @@ def main():
                 rooms = options.rooms, server = options.server, log = log,
                 resource = options.resource, users = set(options.users))
         bot.debug = options.debug
+        bot.register_handler(EVENT_REGISTER, bot.on_register_user)
 
         try:
             bot.start()

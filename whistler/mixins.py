@@ -14,7 +14,8 @@ import threading
 
 
 class HelpCommandMixin(object):
-    """
+    """Bot mix-in which adds a "help" command.
+
     Mix-in class which adds a "help" command to a :class:`WhistlerBot`. To
     use it in your custom bot, do something like:
 
@@ -40,9 +41,8 @@ class HelpCommandMixin(object):
 
 
 class Poll(object):
-    """
-    Represents a poll with several choices.
-    """
+    """Represents a poll with several choices."""
+
     def __init__(self, description=None):
         self.description = description
         self.voteuids    = set()
@@ -56,6 +56,7 @@ class Poll(object):
             This is used to check that the same does not vote more than
             once.
         :param option: Index (1-based) of the option chosen.
+
         """
         if uid in self.voteuids:
             raise ValueError("User already voted")
@@ -68,26 +69,26 @@ class Poll(object):
             raise ValueError("Option %r is not valid" % option)
 
     def add(self, choice):
-        """Adds a choice to the poll.
-        """
+        """Adds a choice to the poll."""
         self.choices.append(choice)
         self.votecount.append(0)
 
 
 class PollsMixin(object):
-    """Implements a simple polls system as a mix-in for :class:`WhistlerBot`.
-    """
+    """Implements a simple polls system as a mix-in for :class:`WhistlerBot`."""
+
     def __init__(self):
         self._polls = {}
 
     def cmd_poll(self, msg, args):
         """Create polls and manage them. Usage:
 
-            !poll              - Show list of polls
-            !poll <id>         - Show poll
-            !poll <id> new <d> - Create a new poll with the given description
-            !poll <id> del     - Delete a poll
-            !poll <id> add <c> - Add a choice to a poll
+        !poll              - Show list of polls
+        !poll <id>         - Show poll
+        !poll <id> new <d> - Create a new poll with the given description
+        !poll <id> del     - Delete a poll
+        !poll <id> add <c> - Add a choice to a poll
+
         """
         if not len(args):
             return "Polls: " + ", ".join(self._polls.iterkeys())
@@ -126,9 +127,10 @@ class PollsMixin(object):
     def cmd_vote(self, msg, args, jid=None):
         """Vote in a poll. Can receive one or two arguments:
 
-            !vote            - Show list of active polls
-            !vote <id>       - Show available options in a poll
-            !vote <id> <opt> - Vote for a given choice in a poll
+        !vote            - Show list of active polls
+        !vote <id>       - Show available options in a poll
+        !vote <id> <opt> - Vote for a given choice in a poll
+
         """
         if not len(args):
             return "Active polls: " + ", ".join(self._polls.iterkeys())
@@ -167,21 +169,22 @@ class PollsMixin(object):
 
 
 class PatchQueueMixin(object):
-    """
+    """Patch queue bot plugin class.
+
     Mix-in class with add a number of patchbot commands, more of them is
     based on #exherbo IRC patchbot, which is explained in
     http://2tu.us/2sjr, you can use this mixin as followin explained:
 
     >>> class MyBot(WhistlerBot, PatchQueueMixin):
     ...     pass
-    """
 
+    """
     cache = {}
     index = 0
     lock = threading.RLock()
 
     def cmd_patchdone(self, cmd, args):
-        """ Remove a patch from the patchlist. Example: !pd 445 """
+        """Remove a patch from the patchlist. Example: !pd 445"""
 
         for patch in args:
             try:
@@ -191,7 +194,7 @@ class PatchQueueMixin(object):
 
 
     def cmd_patchlist(self, cmd, args):
-        """ Show the patch in current queue. Example: !pl [project]+ """
+        """Show the patch in current queue. Example: !pl [project]+"""
         ret = ""
 
         for patch in self.cache.keys():
@@ -205,11 +208,7 @@ class PatchQueueMixin(object):
 
 
     def cmd_patchqueue(self, cmd, args):
-        """
-        Enqueue a patch into the queue.
-        Example: !pq <url> <project> [desc]
-        """
-
+        """Enqueue a patch into the queue. Example: !pq <url> <project> [desc]"""
         if len(args) < 2:
             return "A valid patch URL and project is mandatory!"
 
