@@ -20,7 +20,8 @@ import subprocess
 from optparse import OptionParser
 
 from whistler.bot import WhistlerBot, restricted
-from whistler.mixins import HelpCommandMixin, PollsMixin
+from whistler.mixins import HelpCommandMixin
+from whistler.mixins.poll import PollsMixin
 
 
 def command_output(cmd):
