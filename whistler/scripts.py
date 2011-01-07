@@ -16,10 +16,9 @@ import sys
 from optparse import OptionParser
 from whistler.bot import WhistlerBot, restricted, EVENT_REGISTER
 from whistler.log import WhistlerLog
-from whistler.mixins import PatchQueueMixin
 
 
-class MainWhistlerBot(WhistlerBot, PatchQueueMixin):
+class MainWhistlerBot(WhistlerBot):
     """Extend basic whistler bot, adding some functionalities."""
 
     def on_register_user(self, who):
