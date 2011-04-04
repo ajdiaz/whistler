@@ -125,12 +125,10 @@ class PollsMixin(object):
                 return "Choice %r is not an integer" % args[1]
 
             try:
-                if not msg.getFrom().getResource():
-                    return ("Error: voting cannote be recorded if user's"
-                            " resource is not available")
-                poll.vote(str(msg.getFrom()), choice)
+                poll.vote(msg["from"].bare, choice)
+                return "Your vote has been recorded, thanks"
             except ValueError, e:
-                return e
+                return str(e)
 
         else:
             return "Wrong number of arguments (%i)" % len(args)
