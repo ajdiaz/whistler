@@ -2,7 +2,7 @@
 Whistler Bot
 ============
 
-Whistler Bot is an XMPP bot written in python using pyxmpp, which is
+Whistler Bot is an XMPP bot written in python using SleekXMPP [1]_, which is
 a requirement. The bot is designed to handle some commands, and it's easy to
 extend.
 
@@ -16,6 +16,7 @@ Simple usage::
 The provided console script called ``whistler`` is a single bot which reply
 to a ``!ping`` command.
 
+.. [1] https://github.com/fritzy/SleekXMPP
 
 Extending bot
 -------------

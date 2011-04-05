@@ -21,7 +21,6 @@ setup(
     author_email='ajdiaz@connectical.com',
     url='http://github.com/ajdiaz/whistler',
     packages=find_packages(),
-    install_requires=[ "xmpppy >= 0.5.0rc1" ],
     entry_points={
         'console_scripts': [
             'whistler = whistler.scripts:main'
