@@ -292,6 +292,8 @@ class WhistlerBot(object):
         self.client.update_roster(jid, subscription="remove")
         self.run_handler(EVENT_UNREGISTER, jid)
 
+    def handle_muc_message(self, message):
+        """Handle any received group chat message.
 
     def handle_muc_message(self, message):
         """Handle any received group chat message.
@@ -364,6 +366,8 @@ class WhistlerBot(object):
         """
         [self.leave_room(room, resource) for room in rooms]
 
+    def join_room(self, room, resource=None):
+        """Join a Multi-User Chat (MUC) room.
 
     def join_room(self, room, resource=None):
         """Join a Multi-User Chat (MUC) room.
@@ -374,7 +378,6 @@ class WhistlerBot(object):
 
         :param `room`: The room name.
         :param `resource`: A resource name for the bot in the room.
-
         """
         self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource)
         self.run_handler(EVENT_JOIN, room)
