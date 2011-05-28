@@ -147,6 +147,11 @@ class WhistlerBot(object):
         return (jid for jid in self.client.roster.iterkeys()
                 if jid not in self.rooms and jid != self.jid)
 
+    @property
+    def roster(self):
+        """Bot roster"""
+        return self.client.roster
+
     def run_handler(self, event, *args, **kwargs):
         """Performs the handler actions related with specified event."""
 
@@ -279,17 +284,17 @@ class WhistlerBot(object):
         return jid not in self.rooms and jid in self.client.roster
 
 
-    def register_user(self, jid):
+    def register_user(self, jid, subscription="both"):
         """Register an user as valid user for the bot."""
 
-        self.client.update_roster(jid, subscription="both")
+        self.client.update_roster(jid, subscription=subscription)
         self.run_handler(EVENT_REGISTER, jid)
 
 
-    def unregister_user(self, jid):
+    def unregister_user(self, jid, subscription="remove"):
         """Unregister an user as valid user for the bot."""
 
-        self.client.update_roster(jid, subscription="remove")
+        self.client.update_roster(jid, subscription=subscription)
         self.run_handler(EVENT_UNREGISTER, jid)
 
 
