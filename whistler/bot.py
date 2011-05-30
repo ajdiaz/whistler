@@ -51,12 +51,15 @@ from whistler.log import WhistlerLog
 
 COMMAND_CHAR = "!"
 
-EVENT_JOIN       = 0
-EVENT_CONNECT    = 1
-EVENT_DISCONNECT = 2
-EVENT_REGISTER   = 3
-EVENT_LEAVE      = 4
-EVENT_UNREGISTER = 5
+EVENT_JOIN        = 0
+EVENT_CONNECT     = 1
+EVENT_DISCONNECT  = 2
+EVENT_REGISTER    = 3
+EVENT_LEAVE       = 4
+EVENT_UNREGISTER  = 5
+EVENT_MESSAGE     = 6
+EVENT_MUC_MESSAGE = 7
+
 
 def restricted(fun):
     """Decorator to restrict access to bot functionality.
@@ -124,9 +127,10 @@ class WhistlerBot(object):
         self.log = log or WhistlerLog()
         self.debug = False
         self._initial_users = users
-        self.handlers = { EVENT_CONNECT: [], EVENT_DISCONNECT: [],
-                          EVENT_REGISTER: [], EVENT_JOIN: [],
-                          EVENT_LEAVE: [] }
+        self.handlers = { EVENT_CONNECT:  [], EVENT_DISCONNECT:  [],
+                          EVENT_REGISTER: [], EVENT_JOIN:        [],
+                          EVENT_LEAVE:    [], EVENT_UNREGISTER:  [],
+                          EVENT_MESSAGE:  [], EVENT_MUC_MESSAGE: []}
 
         self.client = None
 
@@ -327,6 +331,8 @@ class WhistlerBot(object):
             if result is not None:
                 message.reply(result).send()
 
+        self.run_handler(EVENT_MUC_MESSAGE, message, arguments)
+
     def handle_message(self, message):
         """Handle a direct chat message.
 
@@ -349,6 +355,7 @@ class WhistlerBot(object):
             if result is not None:
                 message.reply(result).send()
 
+        self.run_handler(EVENT_MESSAGE, message, arguments)
 
     def join(self, rooms, resource=None):
         """Join several rooms at once.
