@@ -353,6 +353,11 @@ class WhistlerBot(object):
         """
         to.reply(message).send()
 
+    def get_room_nicks(self, room):
+        """Return a dict with the nicks in room as keys. Values contains
+        data about these nicks."""
+        return self.client.plugin["xep_0045"].rooms[room]
+
     def handle_muc_message(self, message):
         """Handle any received group chat message.
 
