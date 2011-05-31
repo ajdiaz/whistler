@@ -16,13 +16,14 @@ command, provided in basic whistler package.
 """
 
 import sys
+import logging
 import subprocess
+
 from optparse import OptionParser
-
-from whistler.bot import WhistlerBot, restricted
-from whistler.mixins import HelpCommandMixin
+from whistler.mixins.log import LogMixin
 from whistler.mixins.poll import PollsMixin
-
+from whistler.mixins import HelpCommandMixin
+from whistler.bot import WhistlerBot, restricted
 
 def command_output(cmd):
     cmd = subprocess.Popen(cmd,
@@ -37,11 +38,12 @@ def command_output(cmd):
         return "Error (%i): %s" % (cmd.returncode, err)
 
 
-class FooBot(WhistlerBot, HelpCommandMixin, PollsMixin):
+class FooBot(WhistlerBot, HelpCommandMixin, PollsMixin, LogMixin):
     def __init__(self, *arg, **kw):
         WhistlerBot.__init__(self, *arg, **kw)
         HelpCommandMixin.__init__(self)
         PollsMixin.__init__(self)
+        LogMixin.__init__(self)
 
     def cmd_wtf(self, msg, args):
         """Uses the "wtf" tool to define acronyms and words."""
@@ -89,9 +91,6 @@ def main():
 
     parser.add_option("-P", "--password", action="store", dest="password",
         type="str", default="", help="Specify user password.")
-
-    parser.add_option("-D", "--debug", action="store_true", dest="debug",
-        default=False, help="Run in debug mode.")
 
     parser.add_option("-R", "--room", action="append", dest="rooms",
         default=[], help="Join into this room (option can be repeated.")
