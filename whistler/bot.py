@@ -59,6 +59,7 @@ EVENT_LEAVE       = 4
 EVENT_UNREGISTER  = 5
 EVENT_MESSAGE     = 6
 EVENT_MUC_MESSAGE = 7
+EVENT_MUC_COMMAND = 8
 
 
 def restricted(fun):
@@ -130,7 +131,8 @@ class WhistlerBot(object):
         self.handlers = { EVENT_CONNECT:  [], EVENT_DISCONNECT:  [],
                           EVENT_REGISTER: [], EVENT_JOIN:        [],
                           EVENT_LEAVE:    [], EVENT_UNREGISTER:  [],
-                          EVENT_MESSAGE:  [], EVENT_MUC_MESSAGE: []}
+                          EVENT_MESSAGE:  [], EVENT_MUC_MESSAGE: [],
+                          EVENT_MUC_COMMAND: []}
 
         self.client = None
 
@@ -156,6 +158,16 @@ class WhistlerBot(object):
         """Bot roster"""
         return self.client.roster
 
+    def get_nick(self, jid):
+        """Return the resource name of a JID which is participant of
+        a MUC room"""
+        return jid.resource
+
+    def get_room(self, jid):
+        """Return the room name of a JID which is participant of a
+        MUC room"""
+        return jid.bare
+
     def run_handler(self, event, *args, **kwargs):
         """Performs the handler actions related with specified event."""
 
@@ -177,15 +189,9 @@ class WhistlerBot(object):
         """
         self.handlers[typ].append(fun)
 
-    def send_to(self, who, data):
-        """Send a chat message to an user.
-
-        :param `who`: The JID as string representation of the recipient.
-        :param `data`: An string which contain the message to be set.
-
-        """
-        self.client.send_message(dest, data, mtype="chat")
-
+    def unregister_handler(self, typ, fun):
+        """Unregister a previously registerd handler."""
+        self.handlers[typ].remove(fun)
 
     def set_subject(self, room, subject):
         """Set a new subject on specified room."""
@@ -301,6 +307,14 @@ class WhistlerBot(object):
         self.client.update_roster(jid, subscription=subscription)
         self.run_handler(EVENT_UNREGISTER, jid)
 
+    def reply(self, to, message):
+        """Send a reply to an specified message, using a new message one.
+
+        :param `to`: a message to be replied
+        :param `message`: a string with the reply.
+
+        """
+        to.reply(message).send()
 
     def handle_muc_message(self, message):
         """Handle any received group chat message.
@@ -309,6 +323,8 @@ class WhistlerBot(object):
 
         """
         body = message["body"]
+
+        self.run_handler(EVENT_MUC_MESSAGE, message, None)
 
         if not body or (body[0] != COMMAND_CHAR \
                 and not body.startswith(self.resource + ", ") \
@@ -324,14 +340,15 @@ class WhistlerBot(object):
             arguments = body.split()[2:]
 
         command = getattr(self, "cmd_%s" % command_n, None)
+        message.command = command
 
         if command:
             self.log.info("muc command %s %r" % (command_n, arguments))
             result = command(message, arguments)
             if result is not None:
-                message.reply(result).send()
+                self.reply(message, result)
 
-        self.run_handler(EVENT_MUC_MESSAGE, message, arguments)
+        self.run_handler(EVENT_MUC_COMMAND, message, arguments)
 
     def handle_message(self, message):
         """Handle a direct chat message.
@@ -353,7 +370,7 @@ class WhistlerBot(object):
             self.log.info("chat command %s %r" % (command_n, arguments))
             result = command(message, arguments)
             if result is not None:
-                message.reply(result).send()
+                self.reply(message, result)
 
         self.run_handler(EVENT_MESSAGE, message, arguments)
 
