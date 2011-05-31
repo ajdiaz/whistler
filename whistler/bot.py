@@ -87,6 +87,54 @@ def restricted(fun):
                             ( fun.__name__[4:], user ))
     return update_wrapper(new, fun)
 
+def only_in_room(fun):
+    """Decorator to restrict a command to be valid only in rooms where bot
+    joined in.
+
+    The restricted decorator is designed to work in commands, for example:
+
+    .. code-block:: python
+
+      @only_in_room
+      def cmd_ping(self, msg, args):
+          return "pong"
+
+    In this example ping command is only allowed to executed in rooms.
+
+    """
+    def new(self, msg, args):
+        if msg.get_mucnick():
+            return fun(self, msg, args)
+        else:
+            self.log.warning("ignoring command %s from %s because is only_room message." % \
+                            ( fun.__name__[4:], msg["from"] ))
+    return update_wrapper(new, fun)
+
+def only_in_private(fun):
+    """Decorator to restrict a command to be valid only in private messages
+    (not rooms). Please note that this decorator do not validate the user.
+
+    The restricted decorator is designed to work in commands, for example:
+
+    .. code-block:: python
+
+      @only_in_private
+      def cmd_ping(self, msg, args):
+          return "pong"
+
+    In this example ping command is only allowed to executed in private
+    chats.
+
+    """
+    def new(self, msg, args):
+        if not msg.get_mucnick():
+            return fun(self, msg, args)
+        else:
+            self.log.warning("ignoring command %s from %s because is only_private message." % \
+                            ( fun.__name__[4:], msg.get_mucnick() ))
+    return update_wrapper(new, fun)
+
+
 
 class WhistlerConnectionError(Exception):
     """Exception which will be raised on bot connection error."""
@@ -157,16 +205,6 @@ class WhistlerBot(object):
     def roster(self):
         """Bot roster"""
         return self.client.roster
-
-    def get_nick(self, jid):
-        """Return the resource name of a JID which is participant of
-        a MUC room"""
-        return jid.resource
-
-    def get_room(self, jid):
-        """Return the room name of a JID which is participant of a
-        MUC room"""
-        return jid.bare
 
     def run_handler(self, event, *args, **kwargs):
         """Performs the handler actions related with specified event."""
@@ -292,7 +330,6 @@ class WhistlerBot(object):
 
         """
         return jid not in self.rooms and jid in self.client.roster
-
 
     def register_user(self, jid, subscription="both"):
         """Register an user as valid user for the bot."""
