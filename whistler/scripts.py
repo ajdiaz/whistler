@@ -15,6 +15,7 @@ command, provided in basic whistler package.
 
 """
 
+import logging
 import sys, os, io
 
 try:
@@ -25,13 +26,15 @@ except ImportError:
 from whistler.bot import WhistlerBot
 from whistler.mixins import BotFactory
 
+
 DEFAULT_CONFIG = {
     "server":   "speeqe.com",
     "account":  "speeqe.com",
     "resource": "whistler",
     "password": "doesnotmatter",
     "port":      5222,
-    "use_tls":  False
+    "use_tls":   False,
+    "loglevel":  logging.WARNING
 }
 
 
@@ -42,7 +45,6 @@ def main():
     the command line.
 
     """
-
     factory = BotFactory()
     config  = RawConfigParser(DEFAULT_CONFIG)
 
@@ -58,6 +60,10 @@ def main():
 
     mixins = map(lambda x:x[6:], filter(lambda x:x[0:5] == "mixin:", config.sections()))
     rooms  = map(lambda x:x[5:], filter(lambda x:x[0:4] == "room:",  config.sections()))
+
+    logging.basicConfig(level=config.get("DEFAULT", "loglevel"),
+            format="[%(asctime)s] %(levelname)s: %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S")
 
     Bot = factory(mixins)
     bot = Bot(

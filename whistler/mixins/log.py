@@ -14,6 +14,7 @@ class LogMixin(object):
 
     def __init__(self, *args, **kw):
         """Create a new log mixin."""
+
         if not getattr(self, "log", None):
             self.log = WhistlerLog()
 

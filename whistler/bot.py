@@ -150,7 +150,7 @@ class WhistlerBot(object):
     """
 
     def __init__(self, jid, password, server=None, rooms=None,
-            resource=None, log=None, users=None, use_tls=False):
+            resource=None, log=None, users=[], use_tls=False):
         """Initialize a Whistler bot.
 
         Create a new :class:`WhistlerBot` object, the :func:`__init__`
