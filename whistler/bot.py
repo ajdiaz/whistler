@@ -367,8 +367,6 @@ class WhistlerBot(object):
         """
         body = message["body"]
 
-        print "h"
-
         self.run_handler(EVENT_MUC_MESSAGE, message, None)
 
         if not body or (body[0] != COMMAND_CHAR \

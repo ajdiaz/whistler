@@ -58,12 +58,14 @@ def main():
         print >> sys.stderr, "unable to read config file %s." % sys.argv[1]
         return 1
 
-    mixins = map(lambda x:x[6:], filter(lambda x:x[0:5] == "mixin:", config.sections()))
-    rooms  = map(lambda x:x[5:], filter(lambda x:x[0:4] == "room:",  config.sections()))
+    mixins = map(lambda x:x[6:], filter(lambda x:x[0:6] == "mixin:", config.sections()))
+    rooms  = map(lambda x:x[5:], filter(lambda x:x[0:5] == "room:",  config.sections()))
 
-    logging.basicConfig(level=config.get("DEFAULT", "loglevel"),
+    logging.basicConfig(
+            level=config.getint("DEFAULT", "loglevel"),
             format="[%(asctime)s] %(levelname)s: %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S")
+            datefmt="%Y-%m-%d %H:%M:%S"
+    )
 
     Bot = factory(mixins)
     bot = Bot(
