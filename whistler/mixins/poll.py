@@ -42,10 +42,10 @@ class Poll(object):
         self.votecount.append(0)
 
 
-class PollsMixin(object):
+class PollMixin(object):
     """Implements a simple polls system as a mix-in for :class:`WhistlerBot`."""
 
-    def __init__(self):
+    def __init__(self, *args, **kw):
         self._polls = {}
 
     def cmd_poll(self, msg, args):

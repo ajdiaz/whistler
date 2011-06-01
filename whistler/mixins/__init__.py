@@ -1,38 +1,52 @@
 #! /usr/bin/env python
-# -*- coding: utf-8 -*-
-# vim:fenc=utf-8
-#
-# Copyright © 2010 Adrian Perez <aperez@igalia.com>
+# -*- encoding: utf-8 -*-
+# vim:fenc=utf-8:
 
 """
 Useful mix-in classes to add prebuilt behavior to custom bots.
 """
 
-import inspect
+import subprocess
+from whistler.bot import WhistlerBot
 
-class HelpCommandMixin(object):
-    """Bot mix-in which adds a "help" command.
 
-    Mix-in class which adds a "help" command to a :class:`WhistlerBot`. To
-    use it in your custom bot, do something like:
+def command_output(cmd):
+    """Utility which returns the output of a system command."""
+    cmd = subprocess.Popen(cmd,
+            stdin  = None,
+            stderr = subprocess.PIPE,
+            stdout = subprocess.PIPE)
+    out, err = cmd.communicate()
+    cmd.wait()
+    if cmd.returncode == 0:
+        if out[-1] == "\n":
+            return out[:-1] # remove last \n
+        else:
+            return out
+    else:
+        return "Error (%i): %s" % (cmd.returncode, err)
 
-    >>> class MyBot(WhistlerBot, HelpCommandMixin):
-    ...     pass
 
-    """
-    def __get_commands(self):
-        for (name, kind, _, _) in inspect.classify_class_attrs(self.__class__):
-            if name.startswith("cmd_") and kind == "method":
-                yield name[4:]
+def _bot_init(self, *args, **kw):
+    for mixin in self.mixins:
+        mixin.__init__(self, *args, **kw)
 
-    def cmd_help(self, cmd, args):
-        """Obtains a list of commands, or help about a particular command."""
-        if not args:
-            return "Available commands: " + ", ".join(self.__get_commands())
 
-        func = getattr(self, "cmd_" + args[0], None)
-        if func is None:
-            return "No such command '%s'" % args[0]
+class BotFactory(object):
+    """Create a new bot class using mixins passed in call."""
+    def bot_class_import(self, name):
+        base = "whistler.mixins."
 
-        return "%s: %s" % (args[0], inspect.getdoc(func))
+        modname = base + name
+        klsname = name.capitalize() + "Mixin"
+
+        mod = __import__(modname, globals(), locals(), [klsname])
+        return getattr(mod, klsname)
+
+    def __call__(self, mixins=[]):
+        args = [WhistlerBot]
+        args.extend(map(self.bot_class_import, mixins))
+
+        return type("NewBot", tuple(args), { "mixins":args, "__init__": _bot_init })
+
 

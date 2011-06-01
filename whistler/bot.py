@@ -150,7 +150,7 @@ class WhistlerBot(object):
     """
 
     def __init__(self, jid, password, server=None, rooms=None,
-            resource=None, log=None, users=None):
+            resource=None, log=None, users=None, use_tls=False):
         """Initialize a Whistler bot.
 
         Create a new :class:`WhistlerBot` object, the :func:`__init__`
@@ -174,7 +174,7 @@ class WhistlerBot(object):
         self.password = password
         self.server = server
         self.log = log or WhistlerLog()
-        self.debug = False
+        self.use_tls = use_tls
         self._initial_users = users
         self.handlers = { EVENT_CONNECT:  [], EVENT_DISCONNECT:  [],
                           EVENT_REGISTER: [], EVENT_JOIN:        [],
@@ -264,7 +264,8 @@ class WhistlerBot(object):
         self.client.register_plugin("xep_0045") # Multi-User Chat
 
         if self.client.connect(self.server or ()):
-            self.client.start_tls()
+            if self.use_tls:
+                self.client.start_tls()
             self.log.info("connected to %s, port %d" % self.server)
         else:
             raise WhistlerConnectionError("Unable to connect to %s:%d"
@@ -366,6 +367,8 @@ class WhistlerBot(object):
         """
         body = message["body"]
 
+        print "h"
+
         self.run_handler(EVENT_MUC_MESSAGE, message, None)
 
         if not body or (body[0] != COMMAND_CHAR \
@@ -458,7 +461,6 @@ class WhistlerBot(object):
 
         """
         self.log.info("Shutting down the bot...")
-        [self.leave_room(room) for room in self.rooms]
         self.run_handler(EVENT_DISCONNECT)
         self.client.disconnect()
 

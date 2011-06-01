@@ -15,61 +15,24 @@ command, provided in basic whistler package.
 
 """
 
-import sys
-import logging
-import subprocess
+import sys, os, io
 
-from optparse import OptionParser
-from whistler.mixins.log import LogMixin
-from whistler.mixins.poll import PollsMixin
-from whistler.mixins import HelpCommandMixin
-from whistler.bot import WhistlerBot, restricted
+try:
+    from ConfigParser import RawConfigParser
+except ImportError:
+    from configparser import RawConfigParser
 
-def command_output(cmd):
-    cmd = subprocess.Popen(cmd,
-            stdin  = None,
-            stderr = subprocess.PIPE,
-            stdout = subprocess.PIPE)
-    out, err = cmd.communicate()
-    cmd.wait()
-    if cmd.returncode == 0:
-        return out
-    else:
-        return "Error (%i): %s" % (cmd.returncode, err)
+from whistler.bot import WhistlerBot
+from whistler.mixins import BotFactory
 
-
-class FooBot(WhistlerBot, HelpCommandMixin, PollsMixin, LogMixin):
-    def __init__(self, *arg, **kw):
-        WhistlerBot.__init__(self, *arg, **kw)
-        HelpCommandMixin.__init__(self)
-        PollsMixin.__init__(self)
-        LogMixin.__init__(self)
-
-    def cmd_wtf(self, msg, args):
-        """Uses the "wtf" tool to define acronyms and words."""
-        args.insert(0, "/usr/games/wtf")
-        return command_output(args)
-
-    def cmd_uptime(self, msg, args):
-        """Obtain the uptime of the machine running the bot."""
-        return command_output(("/usr/bin/uptime"))
-
-    def cmd_whoami(self, msg, args):
-        """Who are you?"""
-        return "you are %s" % msg["from"]
-
-    def cmd_lsrooms(self, msg, args):
-        """List joined rooms"""
-        return "rooms: " + ", ".join(self.client["xep_0045"].rooms.keys())
-
-    def cmd_lsusers(self, msg, args):
-        """List admin users"""
-        return "users: " + ", ".join(self.users)
-
-    @restricted
-    def cmd_stop(self, msg, args):
-        """Exits the bot"""
-        self.stop()
+DEFAULT_CONFIG = {
+    "server":   "speeqe.com",
+    "account":  "speeqe.com",
+    "resource": "whistler",
+    "password": "doesnotmatter",
+    "port":      5222,
+    "use_tls":  False
+}
 
 
 def main():
@@ -79,48 +42,38 @@ def main():
     the command line.
 
     """
-    parser = OptionParser()
-    parser.add_option("-r", "--resource", action="store", dest="resource",
-        default="whistler", type="str", help="The bot resource name.")
 
-    parser.add_option("-s", "--server", action="store", dest="server",
-       default=None, type="str", help="Server to connect to.")
+    factory = BotFactory()
+    config  = RawConfigParser(DEFAULT_CONFIG)
 
-    parser.add_option("-p", "--port", action="store", dest="port", type="int",
-       default=5222, help="Specify a different destination port.")
+    if len(sys.argv) < 2 or not os.path.isfile(sys.argv[1]):
+        print >> sys.stderr, "usage: whistler <config>"
+        return 1
 
-    parser.add_option("-P", "--password", action="store", dest="password",
-        type="str", default="", help="Specify user password.")
+    try:
+        config.read(sys.argv[1])
+    except:
+        print >> sys.stderr, "unable to read config file %s." % sys.argv[1]
+        return 1
 
-    parser.add_option("-R", "--room", action="append", dest="rooms",
-        default=[], help="Join into this room (option can be repeated.")
+    mixins = map(lambda x:x[6:], filter(lambda x:x[0:5] == "mixin:", config.sections()))
+    rooms  = map(lambda x:x[5:], filter(lambda x:x[0:4] == "room:",  config.sections()))
 
-    parser.add_option("-U", "--user", action="append", dest="users",
-        default=[], help="Set the user as master user (option can be repeated.")
-
-    # Parse options
-    options, args = parser.parse_args()
-
-    if len(args) < 1:
-        raise IndexError("usage: %s [options] <JID>" % sys.argv[0])
-
-    if options.server:
-        options.server = ( options.server, options.port )
-
-    options.jid = args[0]
-
-    bot = FooBot(options.jid, options.password,
-                 server=options.server,
-                 resource=options.resource,
-                 rooms=options.rooms,
-                 users=options.users)
+    Bot = factory(mixins)
+    bot = Bot(
+              jid      = config.get("DEFAULT", "account"),
+              password = config.get("DEFAULT", "password"),
+              resource = config.get("DEFAULT", "resource"),
+              use_tls  = config.get("DEFAULT", "use_tls"),
+              server   = ( config.get("DEFAULT", "server"),
+                           config.getint("DEFAULT", "port") ),
+              rooms    = rooms,
+    )
 
     try:
         bot.start()
-
     except KeyboardInterrupt:
         pass
-
     finally:
         bot.stop()
 

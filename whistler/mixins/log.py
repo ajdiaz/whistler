@@ -12,7 +12,7 @@ from whistler.log import WhistlerLog
 class LogMixin(object):
     """Implements a basic log features for a :class:`WhistlerBot`."""
 
-    def __init__(self):
+    def __init__(self, *args, **kw):
         """Create a new log mixin."""
         if not getattr(self, "log", None):
             self.log = WhistlerLog()
