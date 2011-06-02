@@ -21,5 +21,9 @@ class LogMixin(object):
         self.register_handler(EVENT_MESSAGE, self.save_log_message)
 
     def save_log_message(self, message, args):
-        self.log.info("<%s> %s" % ( message["from"], message["body"]))
+        self.log.info("[%s] <%s> %s" % (
+            "room" if message["type"] == "groupchat" else "chat",
+            message["from"],
+            message["body"],
+         ))
 
