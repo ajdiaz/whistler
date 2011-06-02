@@ -410,6 +410,12 @@ class WhistlerBot(object):
         if not message["body"]:
             return
 
+        self.run_handler(EVENT_MESSAGE, message, None)
+
+        if message["type"] == "groupchat":
+            # discard muc messages here.
+            return
+
         body = message["body"].split()
 
         command_n = body[0]
@@ -423,7 +429,6 @@ class WhistlerBot(object):
             if result is not None:
                 self.reply(message, result)
 
-        self.run_handler(EVENT_MESSAGE, message, arguments)
 
     def join(self, rooms, resource=None):
         """Join several rooms at once.
