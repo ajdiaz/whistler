@@ -243,6 +243,14 @@ class WhistlerBot(object):
             mesg = "Whistler set subject to: %s" % subject
             self.client.send_message(room, mesg, subject, "groupchat")
 
+    def register_plugin(self, plugin_name):
+        """Register a new SleekXMPP plugin."""
+
+        if not self.client:
+            raise WhistlerError("No client connected")
+
+        self.client.register_plugin(plugin_name)
+
     def connect(self):
         """Perform a connection to the server.
 
