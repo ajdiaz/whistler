@@ -7,6 +7,7 @@ The Toy mixin provide you a suite of toys to play with the bot. Nothing
 serious happens here.
 """
 
+from whistler.bot import restricted
 from whistler.mixins import command_output
 
 
@@ -26,7 +27,7 @@ class ToyMixin(object):
 
     def cmd_lsrooms(self, msg, args):
         """List joined rooms"""
-        return "rooms: " + ", ".join(self.client["xep_0045"].rooms.keys())
+        return "rooms: " + ", ".join(self.rooms)
 
     def cmd_lsusers(self, msg, args):
         """List admin users"""
@@ -35,6 +36,7 @@ class ToyMixin(object):
     @restricted
     def cmd_stop(self, msg, args):
         """Exits the bot"""
+        self.reply(msg, "Bye Bye!")
         self.stop()
 
 

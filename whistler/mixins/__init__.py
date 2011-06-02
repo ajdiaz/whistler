@@ -28,12 +28,27 @@ def command_output(cmd):
 
 
 def _bot_init(self, *args, **kw):
+    WhistlerBot.__init__(self, *args, **kw)
+
     for mixin in self.mixins:
-        mixin.__init__(self, *args, **kw)
+        if mixin in self._factory_options:
+            mixin.__init__(self, **self._factory_options[mixin])
+        else:
+            mixin.__init__(self)
 
 
 class BotFactory(object):
     """Create a new bot class using mixins passed in call."""
+
+    def __init__(self, options={}):
+        """Create a new factory.
+        :param `options`: a :class:`dict` indexed by mixin name which
+            contains a list of options to be passed as argument at init
+            process of the mixin.
+
+        """
+        self.options = options
+
     def bot_class_import(self, name):
         base = "whistler.mixins."
 
@@ -45,8 +60,13 @@ class BotFactory(object):
 
     def __call__(self, mixins=[]):
         args = [WhistlerBot]
-        args.extend(map(self.bot_class_import, mixins))
+        mixs = map(self.bot_class_import, mixins)
+        args.extend(mixs)
 
-        return type("NewBot", tuple(args), { "mixins":args, "__init__": _bot_init })
+        return type("NewBot", tuple(args), {
+            "mixins": mixs,
+            "_factory_options": self.options,
+            "__init__": _bot_init
+        })
 
 

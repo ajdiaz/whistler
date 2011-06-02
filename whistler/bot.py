@@ -188,7 +188,7 @@ class WhistlerBot(object):
                                     str(random.getrandbits(32))
 
         self.jid += "/" + self.resource
-        self.rooms = set(rooms or [])
+        self._rooms = set(rooms or [])
 
     @property
     def users(self):
@@ -199,12 +199,17 @@ class WhistlerBot(object):
 
         """
         return (jid for jid in self.client.roster.iterkeys()
-                if jid not in self.rooms and jid != self.jid)
+                if jid not in self._rooms and jid != self.jid)
 
     @property
     def roster(self):
         """Bot roster"""
         return self.client.roster
+
+    @property
+    def rooms(self):
+        """Return a list of rooms where bot are joined in."""
+        return self.client["xep_0045"].rooms.keys()
 
     def run_handler(self, event, *args, **kwargs):
         """Performs the handler actions related with specified event."""
@@ -234,10 +239,9 @@ class WhistlerBot(object):
     def set_subject(self, room, subject):
         """Set a new subject on specified room."""
 
-        if room in self.rooms:
+        if room in self._rooms:
             mesg = "Whistler set subject to: %s" % subject
             self.client.send_message(room, mesg, subject, "groupchat")
-
 
     def connect(self):
         """Perform a connection to the server.
@@ -265,6 +269,7 @@ class WhistlerBot(object):
 
         if self.client.connect(self.server or ()):
             if self.use_tls:
+                self.log.info("starting TLS...")
                 self.client.start_tls()
             self.log.info("connected to %s, port %d" % self.server)
         else:
@@ -279,10 +284,9 @@ class WhistlerBot(object):
     def handle_session_start(self, event):
         self.client.get_roster()
         self.client.send_presence()
-        [self.join_room(room) for room in self.rooms]
+        [self.join_room(room) for room in self._rooms]
         for user in self._initial_users:
             self.register_user(user)
-
 
     def register_command(self, cmdname, cmdfun):
         """Register a new command.
@@ -297,7 +301,6 @@ class WhistlerBot(object):
         """
         setattr(self, "cmd_%s" % cmdname, cmdfun)
 
-
     def start(self):
         """Start bot operation.
 
@@ -311,7 +314,6 @@ class WhistlerBot(object):
 
         self.client.process(threaded=False)
 
-
     def stop(self):
         """Stop bot operation.
 
@@ -321,7 +323,6 @@ class WhistlerBot(object):
         """
         self.disconnect()
 
-
     def is_validuser(self, jid):
         """Check for whether an user is valid.
 
@@ -330,14 +331,13 @@ class WhistlerBot(object):
         functions.
 
         """
-        return jid not in self.rooms and jid in self.client.roster
+        return jid not in self._rooms and jid in self.client.roster
 
     def register_user(self, jid, subscription="both"):
         """Register an user as valid user for the bot."""
 
         self.client.update_roster(jid, subscription=subscription)
         self.run_handler(EVENT_REGISTER, jid)
-
 
     def unregister_user(self, jid, subscription="remove"):
         """Unregister an user as valid user for the bot."""
@@ -460,6 +460,7 @@ class WhistlerBot(object):
         """
         self.log.info("Shutting down the bot...")
         self.run_handler(EVENT_DISCONNECT)
+
         self.client.disconnect()
 
 

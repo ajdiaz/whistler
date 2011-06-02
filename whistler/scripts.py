@@ -45,7 +45,6 @@ def main():
     the command line.
 
     """
-    factory = BotFactory()
     config  = RawConfigParser(DEFAULT_CONFIG)
 
     if len(sys.argv) < 2 or not os.path.isfile(sys.argv[1]):
@@ -60,6 +59,8 @@ def main():
 
     mixins = map(lambda x:x[6:], filter(lambda x:x[0:6] == "mixin:", config.sections()))
     rooms  = map(lambda x:x[5:], filter(lambda x:x[0:5] == "room:",  config.sections()))
+
+    factory = BotFactory(dict([(x, dict(config.items("mixin:%s" % x))) for x in mixins]))
 
     logging.basicConfig(
             level=config.getint("DEFAULT", "loglevel"),
@@ -81,8 +82,6 @@ def main():
     try:
         bot.start()
     except KeyboardInterrupt:
-        pass
-    finally:
         bot.stop()
 
 
