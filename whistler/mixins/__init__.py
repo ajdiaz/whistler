@@ -31,8 +31,8 @@ def _bot_init(self, *args, **kw):
     WhistlerBot.__init__(self, *args, **kw)
 
     for mixin in self.mixins:
-        if mixin in self._factory_options:
-            mixin.__init__(self, **self._factory_options[mixin])
+        if mixin._factory_name in self._factory_options:
+            mixin.__init__(self, **self._factory_options[mixin._factory_name])
         else:
             mixin.__init__(self)
 
@@ -56,7 +56,9 @@ class BotFactory(object):
         klsname = name.capitalize() + "Mixin"
 
         mod = __import__(modname, globals(), locals(), [klsname])
-        return getattr(mod, klsname)
+        kls = getattr(mod, klsname)
+        kls._factory_name = name
+        return kls
 
     def __call__(self, mixins=[]):
         args = [WhistlerBot]

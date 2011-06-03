@@ -37,6 +37,10 @@ DEFAULT_CONFIG = {
     "loglevel":  logging.WARNING
 }
 
+def get_no_defaults(config, section):
+    defaults = set(config.defaults().items())
+    sectvals = set(config.items(section))
+    return list(sectvals - defaults)
 
 def main():
     """Main console script function.
@@ -60,7 +64,7 @@ def main():
     mixins = map(lambda x:x[6:], filter(lambda x:x[0:6] == "mixin:", config.sections()))
     rooms  = map(lambda x:x[5:], filter(lambda x:x[0:5] == "room:",  config.sections()))
 
-    factory = BotFactory(dict([(x, dict(config.items("mixin:%s" % x))) for x in mixins]))
+    factory = BotFactory(dict([(x, dict(get_no_defaults(config,"mixin:%s" % x))) for x in mixins]))
 
     logging.basicConfig(
             level=config.getint("DEFAULT", "loglevel"),
