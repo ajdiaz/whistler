@@ -244,8 +244,8 @@ class WhistlerBot(object):
             mesg = "Whistler set subject to: %s" % subject
             self.client.send_message(room, mesg, subject, "groupchat")
 
-    def send(self, to, mesg):
-        self.client.send_message(to, mesg)
+    def send(self, to, mesg, typ="chat", subject=None):
+        self.client.send_message(to, mesg, subject, typ)
 
     def register_plugin(self, plugin_name):
         """Register a new SleekXMPP plugin."""
