@@ -60,6 +60,7 @@ EVENT_UNREGISTER  = 5
 EVENT_MESSAGE     = 6
 EVENT_MUC_MESSAGE = 7
 EVENT_MUC_COMMAND = 8
+EVENT_CHANGE_STATUS = 9
 
 
 def restricted(fun):
@@ -180,7 +181,7 @@ class WhistlerBot(object):
                           EVENT_REGISTER: [], EVENT_JOIN:        [],
                           EVENT_LEAVE:    [], EVENT_UNREGISTER:  [],
                           EVENT_MESSAGE:  [], EVENT_MUC_MESSAGE: [],
-                          EVENT_MUC_COMMAND: []}
+                          EVENT_MUC_COMMAND: [], EVENT_CHANGE_STATUS: []}
 
         self.client = None
 
@@ -243,6 +244,9 @@ class WhistlerBot(object):
             mesg = "Whistler set subject to: %s" % subject
             self.client.send_message(room, mesg, subject, "groupchat")
 
+    def send(self, to, mesg):
+        self.client.send_message(to, mesg)
+
     def register_plugin(self, plugin_name):
         """Register a new SleekXMPP plugin."""
 
@@ -267,6 +271,7 @@ class WhistlerBot(object):
         self.client.add_event_handler("groupchat_message", self.handle_muc_message)
         self.client.add_event_handler("session_start", self.handle_session_start)
         self.client.add_event_handler("message", self.handle_message)
+        self.client.add_event_handler("changed_status", self.handle_changed_status)
 
         # Add plug-ins
         self.client.register_plugin("xep_0030") # Service Discovery
@@ -288,6 +293,8 @@ class WhistlerBot(object):
 
         return self.client
 
+    def handle_changed_status(self, presence):
+        self.run_handler(EVENT_CHANGE_STATUS, presence)
 
     def handle_session_start(self, event):
         self.client.get_roster()
