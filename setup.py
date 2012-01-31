@@ -26,6 +26,9 @@ setup(
             'whistler = whistler.scripts:main'
         ]
     },
+    install_requires = [
+        "sleekxmpp>=1.0"
+    ],
     classifiers=[
           'Development Status :: 4 - Beta',
           'Intended Audience :: Developers',
