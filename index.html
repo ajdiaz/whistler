@@ -1,88 +1,142 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='utf-8'>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en" dir="ltr">
+	<head profile="http://gmpg.org/xfn/11">
+		<title>whistler - the whistler bot </title>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta http-equiv="imagetoolbar" content="no" />
+		<link href="http://fonts.googleapis.com/css?family=Raleway:100" rel="stylesheet" type="text/css">
+		<link rel="stylesheet" href="styles/default.css" type="text/css" />
+		<link rel="shortcut icon" href="favicon.ico" />
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js" type="text/javascript"></script>
+		<script src="scripts/jquery.smothscroll.js" type="text/javascript"></script>
+		<script type="text/javascript">$(function(){$("a[href^=\#]").smoothScroll();});</script>
+	</head>
+	<body>
+		<div id="fadeout"></div>
 
-  <title>ajdiaz/whistler @ GitHub</title>
+		<div id="flybar">
+			<a id="logo" href="#top"> </a>
+			<div class="navigation">
+				<div class="button">
+					<a href="#install">Install</a>
+				</div>
+			</div>
+			<div class="navigation">
+				<div class="button">
+					<a href="#usage">Usage</a>
+				</div>
+			</div>
+			<div class="navigation">
+				<div class="button">
+					<a href="#extend">Extend</a>
+				</div>
+			</div>
+			<div class="navigation">
+				<div class="button">
+					<a href="#contrib">Contrib</a>
+				</div>
+			</div>
+			<div class="navigation">
+				<div class="button">
+					<a href="https://github.com/ajdiaz/whistler/tree/master/whistler/mixins">Mixins</a>
+				</div>
+			</div>
+			<div class="navigation">
+				<div class="button">
+					<a href="http:///github.com/ajdiaz/whistler">Fork me on Github!</a>
+				</div>
+			</div>
+		</div>
+		<div id="topall">
+			<div class="box"></div>
+		</div>
+		<div id="content" class="container">
+			<h1>The Whistler Bot</h1>
+<p><a id="download" href="https://github.com/ajdiaz/whistler/tarball/v1.0">Download v1.0 (stable)</a></p>
+<p>The Whistler bot is another jabber bot with <acronym title="Multi-User Chat">MUC</acronym> support,
+<strong>designed to be easy to extend</strong>, and it's built on the top of the 
+<a href="https://github.com/fritzy/SleekXMPP/wiki">SleekXMPP</a> library.</p>
+<p>Whistler is a generic framework to build MUC bots. The MUC rooms are the new
+<acronym title="Internet Relay Chat">IRC</acronym> channels. Although exists
+many differences and, of course, many people still prefer the old and good
+IRC channel, the true is that the MUC rooms offers a number of new
+posibilities and utilities.</p>
+<p>Whistler works using <strong>mixins</strong>. The mixins implements a bot
+<em>personality</em>, and of course you can mix a number of mixins. Sounds cool eh?!</p>
+<h2><a id="install" href="#install" class="headerlink">Installation</a></h2>
 
-  <style type="text/css">
-    body {
-      margin-top: 1.0em;
-      background-color: #87c288;
-      font-family: Helvetica, Arial, FreeSans, san-serif;
-      color: #000000;
-    }
-    #container {
-      margin: 0 auto;
-      width: 700px;
-    }
-    h1 { font-size: 3.8em; color: #783d77; margin-bottom: 3px; }
-    h1 .small { font-size: 0.4em; }
-    h1 a { text-decoration: none }
-    h2 { font-size: 1.5em; color: #783d77; }
-    h3 { text-align: center; color: #783d77; }
-    a { color: #783d77; }
-    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
-    .download { float: right; }
-    pre { background: #000; color: #fff; padding: 15px;}
-    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
-    .footer { text-align:center; padding-top:30px; font-style: italic; }
-  </style>
-</head>
+<p>Whistler is written in <strong>python</strong>, so you need almost a 2.7 version of python
+and the  <a href="https://github.com/fritzy/SleekXMPP/wiki">SleekXMPP</a>
+library (which is installed as dependency).</p>
+<p>Whistler has an entry in <a href="http://pypi.python.org/pypi/whistler/">pypi</a>,
+so you can install whistler using <a href="http://pypi.python.org/pypi/pip">pip</a>
+or <a href="http://pypi.python.org/pypi/setuptools">setuptools</a>:</p>
+<pre>$ pip install whistler
+$ easy_install whistler</pre>
 
-<body>
-  <a href="https://github.com/ajdiaz/whistler"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+<h2><a id="usage" href="#usage" class="headerlink">Usage</a></h2>
 
-  <div id="container">
+<p>The bot is designed to work in foreground, you can use
+process monitoring tool to keep it running in background,
+like runit, daemontools or dmon.</p></p>
+<p>To start the bot create a config file with required data,
+usually you need a server to connect to, a port, an username
+and a password, and of course a MUC channel to join in. The
+example config file is self explanatory.</p></p>
+<p>To start the bot just type:</p>
+<pre>whistler <em>config.file</em></pre>
 
-    <div class="download">
-      <a href="https://github.com/ajdiaz/whistler/zipball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/zip.png"></a>
-      <a href="https://github.com/ajdiaz/whistler/tarball/master">
-        <img border="0" width="90" src="https://github.com/images/modules/download/tar.png"></a>
-    </div>
+<p>Whistler is designed to be modular, once the bot is started without load any mixin,
+bot does nothing. Its a zombie without will.</p>
+<p>Mixins give personality to the bot, so loading the <code>log</code> mixin
+converts the zombie bot into a logger bot; loading the <code>help</code>
+mixin gives the bot the ability of know itself and so on.</p>
+<p>There are a list of mixins, but you can easy create new one.</p>
+<p>To load a mixin just type in the config file an entry
+like that:</p>
+<pre>
+[mixin:<em>mixin_name</em>]
+<em>optional_properties</em>
+</pre>
 
-    <h1><a href="https://github.com/ajdiaz/whistler">whistler</a>
-      <span class="small">by <a href="https://github.com/ajdiaz">ajdiaz</a></span></h1>
+<h2><a id="extend" href="#extend" class="headerlink">Extend</a></h2>
 
-    <div class="description">
-      Whistler Bot is a XMPP bot with MUC (multi-user-conference) support, easy to extend, written in python, using xmpppy.
-    </div>
+<p>The real power of Whistler is the abaility to be
+extended. With mixins you can give to your bot
+a unique function or personality, and you can create
+easily new commands.</p>
+<p>To create new mixin just create a new python file in
+<code>mixins/</code> directory, and put there a new
+class (none parent class is required). Any method which
+starts with "cmd_" prefix will be threated as a bot
+command. For example just type a single mixin which give
+us the current date, so we create the file <code>givemedate.py</code>:</p>
+<pre>
+import datetime
 
-    
+class DateMixin(object):
+    def cmd_givemedate(self, cmd, args):
+        now = datetime.datetime.now()
+        return now.strftime("%Y-%m-%d %H:%M")
+</pre>
 
-    
+<p>Now just edit your config file and add the mixin:</p>
+<pre>[mixin:givemedate]</pre>
 
-    
+<p>Now you can run the bot and enjoy your new command! That's easy, innit?</p>
+<h2><a id="contrib" href="#contrib" class="headerlink">Contribute</a></h2>
 
-    
+<p>The main code is store on github, so you can clone it and make your changes
+as git usual way:</p>
+<pre>git clone git://github.com/ajdiaz/whistler</pre>
 
-    
-      <h2>Authors</h2>
-      <p>Andres J. Diaz (ajdiaz@connectical.com)<br/>Adrian Perez (aperez@igalia.com)<br/>      </p>
-    
-
-    
-      <h2>Contact</h2>
-      <p>Andrés J. Díaz (ajdiaz@connectical.com)<br/>      </p>
-    
-
-    <h2>Download</h2>
-    <p>
-      You can download this project in either
-      <a href="https://github.com/ajdiaz/whistler/zipball/master">zip</a> or
-      <a href="https://github.com/ajdiaz/whistler/tarball/master">tar formats.
-    </p>
-    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
-      by running:
-      <pre>$ git clone git://github.com/ajdiaz/whistler</pre>
-    </p>
-
-    <div class="footer">
-      get the source code on GitHub : <a href="https://github.com/ajdiaz/whistler">ajdiaz/whistler</a>
-    </div>
-
-  </div>
-
+<p>Also, bug reports/fixes, enhancements proposals, new mixins or, in general,
+any comment about the bot are welcome.</p>
+<p>Happy botting! :)</p>
+			<div style="clear:both;"></div>
+		</div>
+		<div id="footer">
+			<p>Web design based on <a href="http://jashkenas.github.com/coffee-script/">coffe-script web site</a>.</p>
+		</div>
+	</body>
 </body>
-</html>
