@@ -34,6 +34,7 @@ DEFAULT_CONFIG = {
     "password": "doesnotmatter",
     "port":      5222,
     "use_tls":   False,
+    "ignore_ssl_cert": True,
     "loglevel":  logging.WARNING
 }
 
@@ -81,6 +82,7 @@ def main():
               server   = ( config.get("DEFAULT", "server"),
                            config.getint("DEFAULT", "port") ),
               rooms    = rooms,
+              ignore_ssl_cert = config.get("DEFAULT", "ignore_ssl_cert")
     )
 
     try:

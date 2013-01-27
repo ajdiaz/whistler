@@ -27,7 +27,9 @@ setup(
         ]
     },
     install_requires = [
-        "sleekxmpp>=1.0"
+        "sleekxmpp>=1.0",
+        "pyasn1>=0.1.4",
+        "pyasn1-modules>=0.0.4"
     ],
     classifiers=[
           'Development Status :: 4 - Beta',

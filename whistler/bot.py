@@ -151,7 +151,7 @@ class WhistlerBot(object):
     """
 
     def __init__(self, jid, password, server=None, rooms=None,
-            resource=None, log=None, users=[], use_tls=False):
+            resource=None, log=None, users=[], use_tls=False, ignore_ssl_cert=True):
         """Initialize a Whistler bot.
 
         Create a new :class:`WhistlerBot` object, the :func:`__init__`
@@ -169,13 +169,17 @@ class WhistlerBot(object):
             *stdout* if none is provided.
         :param `users`: a :class:`set` of valid JID as strings which
             identify master users.
-
+        :param use_tls: if set to true, try to use TLS where available
+        :param ignore_ssl_cert: if set to false raise an exception when
+            certificate do not match with hostname or any other kind of
+            invalid certificate.
         """
         self.jid = jid
         self.password = password
         self.server = server
         self.log = log or WhistlerLog()
         self.use_tls = use_tls
+        self.ignore_ssl_cert = ignore_ssl_cert
         self._initial_users = users
         self.handlers = { EVENT_CONNECT:  [], EVENT_DISCONNECT:  [],
                           EVENT_REGISTER: [], EVENT_JOIN:        [],
@@ -255,6 +259,10 @@ class WhistlerBot(object):
 
         self.client.register_plugin(plugin_name)
 
+    def handle_invalid_cert(self, pem_cert):
+        """Handle a invalid certification request."""
+        self.log.warning("Invalid certificated found, but continue anyway.")
+
     def connect(self):
         """Perform a connection to the server.
 
@@ -272,6 +280,9 @@ class WhistlerBot(object):
         self.client.add_event_handler("session_start", self.handle_session_start)
         self.client.add_event_handler("message", self.handle_message)
         self.client.add_event_handler("changed_status", self.handle_changed_status)
+
+        if self.ignore_ssl_cert:
+            self.client.add_event_handler("ssl_invalid_cert", self.handle_invalid_cert)
 
         # Add plug-ins
         self.client.register_plugin("xep_0030") # Service Discovery
