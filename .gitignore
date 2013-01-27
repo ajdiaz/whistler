@@ -1,2 +1,5 @@
 *.py[co]
 *.sw[pa]
+build
+dist
+whistler.egg*
