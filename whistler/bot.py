@@ -174,6 +174,7 @@ class WhistlerBot(object):
             certificate do not match with hostname or any other kind of
             invalid certificate.
         """
+        self.user = jid
         self.jid = jid
         self.password = password
         self.server = server
@@ -203,8 +204,8 @@ class WhistlerBot(object):
         administrative users or valid users to admin the bot.
 
         """
-        return (jid for jid in self.client.roster.iterkeys()
-                if jid not in self._rooms and jid != self.jid)
+        return filter(lambda x:x not in self._rooms,
+                self.client.roster[self.user].keys())
 
     @property
     def roster(self):
@@ -357,7 +358,7 @@ class WhistlerBot(object):
         functions.
 
         """
-        return jid not in self._rooms and jid in self.client.roster
+        return jid not in self._rooms and jid in self.client.roster[self.user].keys()
 
     def register_user(self, jid, subscription="both"):
         """Register an user as valid user for the bot."""

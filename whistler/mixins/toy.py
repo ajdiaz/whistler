@@ -25,11 +25,11 @@ class ToyMixin(object):
         """Who are you?"""
         return "you are %s" % msg["from"]
 
-    def cmd_lsrooms(self, msg, args):
+    def cmd_rooms(self, msg, args):
         """List joined rooms"""
         return "rooms: " + ", ".join(self.rooms)
 
-    def cmd_lsusers(self, msg, args):
+    def cmd_users(self, msg, args):
         """List admin users"""
         return "users: " + ", ".join(self.users)
 
