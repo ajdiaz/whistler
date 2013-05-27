@@ -1,0 +1,26 @@
+<p><iframe
+	src="http://ghbtns.com/github-btn.html?user={{ theme_repo_author }}&amp;repo={{ theme_repo_name }}&amp;type=watch&amp;count=true&amp;size=large" 
+	allowtransparency="true" frameborder="0" scrolling="0" width="200px"
+	height="35px"></iframe>
+</p>
+<p class="desc">
+{{ theme_description }}
+</p>
+<h3>Feedback</h3>
+<p>Feedback is greatly appreciated. If you have any questions, comments, random
+praise, or anonymous threats, <a href="mailto:{{ theme_repo_email }}">shoot
+	me an email.</a></p>
+
+<button class="tpl"><a href="https://github.com/ajdiaz/{{ theme_repo_name }}/issues">Report bug</a></button>
+
+<h3>Useful Links</h3>
+<ul>
+	{% if theme_package_url %}
+	<li><a href="{{theme_package_url}}">{{theme_repo_name}} @ PyPI</a></li>
+	{% endif %}
+	{% if theme_repo_url %}
+	<li><a href="{{theme_repo_url}}">{{theme_repo_name}} @ github.com</a></li>
+	<li><a href="{{theme_repo_url}}/issues">Issue tracker</a></li>
+	{% endif %}
+</ul>
+
