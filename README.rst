@@ -52,7 +52,7 @@ command name, for example, to handle the command *ping*.
 Example chat
 ------------
 
-.. image:: _static/whistler_screenshot.png
+.. image:: doc/source/_static/whistler_screenshot.png
   :align: left
   :alt: An example of chat with Whistler
 
