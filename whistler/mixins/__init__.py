@@ -6,6 +6,9 @@
 Useful mix-in classes to add prebuilt behavior to custom bots.
 """
 
+import os
+import imp
+import sys
 import subprocess
 from whistler.bot import WhistlerBot
 
@@ -55,9 +58,14 @@ class BotFactory(object):
         modname = base + name
         klsname = name.capitalize() + "Mixin"
 
-        mod = __import__(modname, globals(), locals(), [klsname])
-        kls = getattr(mod, klsname)
-        kls._factory_name = name
+        try:
+            mod = __import__(modname, globals(), locals(), [klsname])
+            kls = getattr(mod, klsname)
+            kls._factory_name = name
+        except ImportError:
+            mod = imp.load_source("whistler.mixin." + name, os.path.join(os.getcwd(), name + ".py"))
+            kls = getattr(mod, klsname)
+
         return kls
 
     def __call__(self, mixins=[]):
