@@ -151,7 +151,7 @@ class WhistlerBot(object):
     """
 
     def __init__(self, jid, password, server=None, rooms=None,
-            resource=None, log=None, users=[], use_tls=False, ignore_ssl_cert=True):
+            resource=None, mention=None, log=None, users=[], use_tls=False, ignore_ssl_cert=True):
         """Initialize a Whistler bot.
 
         Create a new :class:`WhistlerBot` object, the :func:`__init__`
@@ -192,6 +192,7 @@ class WhistlerBot(object):
 
         self.resource = resource or self.__class__.__name__.lower() + \
                                     str(random.getrandbits(32))
+        self.mention = mention or self.resource
 
         self.jid += "/" + self.resource
         self._rooms = set(rooms or [])
@@ -397,8 +398,9 @@ class WhistlerBot(object):
         self.run_handler(EVENT_MUC_MESSAGE, message, None)
 
         if not body or (body[0] != COMMAND_CHAR \
-                and not body.startswith(self.resource + ", ") \
-                and not body.startswith(self.resource + ": ")):
+                and not body.startswith(self.mention + ", ") \
+                and not body.startswith(self.mention + ": ") \
+                and not body.startswith("@" + self.mention)):
             # None to handle
             return
 
