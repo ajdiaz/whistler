@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 from os import path
 
-WHISTLER_VERSION="1.5.1"
+WHISTLER_VERSION="1.5.2"
 
 
 def get_file_contents(filename):
