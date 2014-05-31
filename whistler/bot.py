@@ -451,7 +451,11 @@ class WhistlerBot(object):
             self.log.info("chat command %s %r" % (command_n, arguments))
             result = command(message, arguments)
             if result is not None:
-                self.reply(message, result)
+                if isinstance(result, list):
+                    for r in result:
+                        self.reply(message, r)
+                elif isinstance(result, basestring):
+                    self.reply(message, result)
 
 
     def join(self, rooms, resource=None):
