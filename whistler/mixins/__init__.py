@@ -56,11 +56,17 @@ class BotFactory(object):
 
     def bot_class_import(self, name):
         base = "whistler.mixins."
+        if "." in name:
+            klsname = name.split(".")[-1]
+        else:
+            klsname = name
+        klsname = klsname.capitalize() + "Mixin"
 
-        modname = base + name
-        klsname = name.capitalize() + "Mixin"
+        try:
+            mod = __import__(base+name, globals(), locals(), [klsname])
+        except ImportError:
+            mod = __import__(name, globals(), locals(), [klsname])
 
-        mod = __import__(modname, globals(), locals(), [klsname])
         kls = getattr(mod, klsname)
         kls._factory_name = name
 
