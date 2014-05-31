@@ -12,6 +12,8 @@ import sys
 import subprocess
 from whistler.bot import WhistlerBot
 
+sys.path.append(os.getcwd())
+
 
 def command_output(cmd):
     """Utility which returns the output of a system command."""
@@ -58,13 +60,9 @@ class BotFactory(object):
         modname = base + name
         klsname = name.capitalize() + "Mixin"
 
-        try:
-            mod = __import__(modname, globals(), locals(), [klsname])
-            kls = getattr(mod, klsname)
-            kls._factory_name = name
-        except ImportError:
-            mod = imp.load_source("whistler_mixin_" + name, os.path.join(os.getcwd(), name + ".py"))
-            kls = getattr(mod, klsname)
+        mod = __import__(modname, globals(), locals(), [klsname])
+        kls = getattr(mod, klsname)
+        kls._factory_name = name
 
         return kls
 
