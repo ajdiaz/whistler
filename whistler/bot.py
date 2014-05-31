@@ -418,12 +418,11 @@ class WhistlerBot(object):
             self.log.info("muc command %s %r" % (command_n, arguments))
             result = command(message, arguments)
             if result is not None:
-                if isinstance(result, basestring):
-                    self.reply(message, result)
                 if isinstance(result, list):
                     for r in result:
                         self.reply(message, r)
-
+                elif isinstance(result, basestring):
+                    self.reply(message, result)
         self.run_handler(EVENT_MUC_COMMAND, message, arguments)
 
     def handle_message(self, message):
