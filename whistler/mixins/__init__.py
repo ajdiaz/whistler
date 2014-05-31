@@ -63,7 +63,7 @@ class BotFactory(object):
             kls = getattr(mod, klsname)
             kls._factory_name = name
         except ImportError:
-            mod = imp.load_source("whistler.mixin." + name, os.path.join(os.getcwd(), name + ".py"))
+            mod = imp.load_source("whistler_mixin_" + name, os.path.join(os.getcwd(), name + ".py"))
             kls = getattr(mod, klsname)
 
         return kls
