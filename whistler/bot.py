@@ -488,7 +488,7 @@ class WhistlerBot(object):
         :param `room`: The room name.
         :param `resource`: A resource name for the bot in the room.
         """
-        self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource)
+        self.client.plugin["xep_0045"].joinMUC(room, resource or self.resource, maxhistory="1")
         self.run_handler(EVENT_JOIN, room)
 
 
