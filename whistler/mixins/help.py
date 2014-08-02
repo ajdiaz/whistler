@@ -22,7 +22,9 @@ class HelpMixin(object):
     def __get_commands(self):
         for (name, kind, _, _) in inspect.classify_class_attrs(self.__class__):
             if name.startswith("cmd_") and kind == "method":
-                yield name[4:]
+                fun = getattr(self, name, None)
+                if not hasattr(fun, "restricted") or fun.user:
+                    yield name[4:]
 
     def cmd_help(self, cmd, args):
         """Obtains a list of commands, or help about a particular command."""

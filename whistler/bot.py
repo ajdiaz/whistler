@@ -82,10 +82,13 @@ def restricted(fun):
     def new(self, msg, args):
         user = msg["from"].bare
         if self.is_validuser(user):
+            fun.user = user
             return fun(self, msg, args)
         else:
+            fun.user = None
             self.log.warning("ignoring command %s, invalid user %s." % \
                             ( fun.__name__[4:], user ))
+    fun.restricted = True
     return update_wrapper(new, fun)
 
 def only_in_room(fun):
