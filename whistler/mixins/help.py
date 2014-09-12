@@ -23,7 +23,7 @@ class HelpMixin(object):
         for (name, kind, _, _) in inspect.classify_class_attrs(self.__class__):
             if name.startswith("cmd_") and kind == "method":
                 fun = getattr(self, name, None)
-                if not hasattr(fun, "restricted") or fun.user:
+                if not hasattr(fun, "user") or fun.user is not None:
                     yield name[4:]
 
     def cmd_help(self, cmd, args):
