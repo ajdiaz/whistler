@@ -127,7 +127,7 @@ class PollMixin(object):
             try:
                 poll.vote(msg["from"].bare, choice)
                 return "Your vote has been recorded, thanks"
-            except ValueError, e:
+            except ValueError as e:
                 return str(e)
 
         else:
