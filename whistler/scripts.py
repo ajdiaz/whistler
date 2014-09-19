@@ -36,7 +36,8 @@ DEFAULT_CONFIG = {
     "port":      5222,
     "use_tls":   False,
     "ignore_ssl_cert": True,
-    "loglevel":  logging.WARNING
+    "loglevel":  logging.WARNING,
+    "users": set()
 }
 
 def get_no_defaults(config, section):
@@ -81,6 +82,7 @@ def main():
               resource = config.get("DEFAULT", "resource"),
               mention  = config.get("DEFAULT", "mention"),
               use_tls  = config.get("DEFAULT", "use_tls"),
+              users    = set(config.get("DEFAULT", "users").split(",")),
               server   = ( config.get("DEFAULT", "server"),
                            config.getint("DEFAULT", "port") ),
               rooms    = rooms,

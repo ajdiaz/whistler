@@ -362,7 +362,9 @@ class WhistlerBot(object):
         functions.
 
         """
-        return jid not in self._rooms and jid in self.client.roster[self.user].keys()
+        return (jid not in self._rooms and
+                jid in self.client.roster[self.user].keys()) or \
+               (jid in self._initial_users)
 
     def register_user(self, jid, subscription="both"):
         """Register an user as valid user for the bot."""
