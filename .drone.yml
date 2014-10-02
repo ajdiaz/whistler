@@ -1,4 +1,4 @@
-omage: python3.3
+image: python3.3
 script:
     - pip install -U .
 
