@@ -1,3 +1,13 @@
-image: python2.7
+omage: python3.3
 script:
-    - pip install .
+    - pip install -U .
+
+notification:
+    slack:
+        on_started: true
+        on_success: true
+        on_failure: true
+        team: connectical
+        channel: '#git'
+        username: builder
+        token: {{slackToken}}
